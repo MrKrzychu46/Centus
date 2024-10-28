@@ -9,6 +9,7 @@ android {
     defaultConfig {
         applicationId = "com.example.centus"
         minSdk = 26
+        //noinspection OldTargetApi
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -32,9 +33,8 @@ android {
 }
 
 dependencies {
-
-    implementation(libs.appcompat)
     implementation(libs.material)
+    implementation(libs.appcompat)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     testImplementation(libs.junit)

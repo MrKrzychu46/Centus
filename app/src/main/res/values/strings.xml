@@ -1,3 +1,24 @@
 <resources>
     <string name="app_name">Centus</string>
+    <string name="notifications_icon">Notifications Icon</string>
+    <string name="app_logo">App Logo</string>
+    <string name="d_ug_1">Dług 1</string>
+    <string name="d_ug_2">Dług 2</string>
+    <string name="grupy">Grupy</string>
+    <string name="profil">Profil</string>
+    <string name="ustawienia">Ustawienia</string>
+    <string name="d_ugi_grupowe">Długi Grupowe</string>
+    <string name="todo">TODO</string>
+    <string name="todo1">TODO</string>
+    <string name="grupy1">Grupy</string>
+    <string name="profil1">Profil</string>
+    <string name="ustawienia1">Ustawienia</string>
+    <string name="tytu_powiadomienia">Tytuł powiadomienia</string>
+    <string name="tre_powiadomienia">Treść powiadomienia</string>
+    <string name="zamknij">Zamknij</string>
+    <string name="opcje">Opcje</string>
+    <string name="resetuj_dane">Resetuj Dane</string>
+    <string name="zmie_motyw">Zmień Motyw</string>
+    <string name="notifications_icon2">Notifications Icon 2</string>
+
 </resources>

@@ -1,0 +1,24 @@
+
+
+
+funkcje które muszą zostać dodane gdyby imageview nie chciał działać jako przycisk:
+
+android:clickable="true"
+android:focusable="true"
+
+
+
+kod który musi zostać dodany do aplikacji aby java nasłuchiwała
+klikanie palcem na zdjęcie aby zostało wczytane jako przycisk
+musi zostać dodane aby mogły działać nasłuchwiacze jak są ikony przy "przyciskach" imageview w wyglądzie:
+
+
+ImageView myImageView = findViewById(R.id.myImageView);
+myImageView.setOnClickListener(new View.OnClickListener() {
+    @Override
+    public void onClick(View v) {
+        -Akcja do wykonania po kliknięciu-
+    }
+});
+
+kolory wykorzystywane w projekcie są w pliku colors.xml folder "values"

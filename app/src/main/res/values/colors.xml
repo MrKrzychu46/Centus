@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="background_dark">#1F1F1F</color>
+    <color name="text_light">#F0F0F0</color>
+    <color name="accent_blue">#2196F3</color>
+    <color name="accent_yellow">#FFEB3B</color>
+    <color name="coin_color">#FFD700</color>
+    <color name="button_background">#323232</color>
+    <color name="button_tint">#FFD700</color>
+    <color name="button_pressed">#555555</color>
+
 </resources>
