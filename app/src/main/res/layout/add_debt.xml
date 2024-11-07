@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_dark"
-    tools:context=".MainActivity">
+    tools:context=".AddDebtActivity">
 
     <ImageButton
         android:id="@+id/notificationButton"
@@ -55,43 +55,6 @@
 
 
     <LinearLayout
-        android:id="@+id/debtsList"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:orientation="vertical"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/appLogo"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
-        android:layout_margin="16dp">
-
-        <Button
-            android:id="@+id/debt1"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:backgroundTint="@color/button_background"
-            android:textColor="@color/text_light"
-            android:text="@string/d_ug_1"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:ignore="Suspicious0dp" />
-
-        <Button
-            android:id="@+id/debt2"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:backgroundTint="@color/button_background"
-            android:textColor="@color/text_light"
-            android:text="@string/d_ug_2"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            tools:ignore="Suspicious0dp" />
-
-    </LinearLayout>
-
-    <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -107,7 +70,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/grupy"
-            android:backgroundTint="@color/button_background"
+            android:backgroundTint="@color/accent_blue"
             android:textColor="@color/text_light"
             android:layout_weight="1"/>
 
@@ -116,7 +79,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/profil"
-            android:backgroundTint="@color/button_background"
+            android:backgroundTint="@color/accent_blue"
             android:textColor="@color/text_light"
             android:layout_weight="1"/>
 
@@ -125,7 +88,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/ustawienia"
-            android:backgroundTint="@color/button_background"
+            android:backgroundTint="@color/accent_blue"
             android:textColor="@color/text_light"
             android:layout_weight="1"/>
 

@@ -12,42 +12,66 @@
 
     <!-- Wyświetlanie szczegółów długu -->
 
-    <ImageView
-        android:id="@+id/notificationIcon"
-        android:layout_width="69dp"
-        android:layout_height="49dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="48dp"
-        android:contentDescription="@string/todo"
+    <ImageButton
+        android:id="@+id/notificationButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="44dp"
+        android:contentDescription="@string/notifications_icon"
         android:src="@drawable/ic_bell"
+        android:scaleType="centerInside"
+        android:background="@android:color/transparent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:clickable="true"
+        android:focusable="true"/>
 
     <ImageButton
-        android:id="@+id/appLogoButton"
+        android:id="@+id/appLogo"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="156dp"
-        android:background="@null"
-        android:contentDescription="TODO"
+        android:contentDescription="@string/app_logo"
         android:src="@drawable/ic_add"
+        android:scaleType="centerInside"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription,HardcodedText" />
+        android:layout_marginTop="8dp"
+        android:clickable="true"
+        android:focusable="true"/>
+
+    <ImageButton
+        android:id="@+id/addingDebtsButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="316dp"
+        android:layout_marginTop="44dp"
+        android:contentDescription="@string/addingDebts_icon"
+        android:src="@drawable/ic_plus"
+        android:scaleType="centerInside"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:clickable="true"
+        android:focusable="true"/>
+
+    <!-- missing dodany -->
 
     <TextView
         android:id="@+id/debtAmountLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="64dp"
         android:text="Wysokość długu:"
         android:textColor="@color/text_light"
+
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/appLogoButton"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="32dp"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@+id/notificationButton"
+        tools:ignore="HardcodedText,MissingConstraints" />
 
     <TextView
         android:id="@+id/debtAmount"
@@ -109,12 +133,13 @@
         android:layout_marginTop="8dp" />
 
     <!-- Dolne menu nawigacyjne -->
+
     <Button
         android:id="@+id/editDebtButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="160dp"
-        android:layout_marginTop="156dp"
+        android:layout_marginStart="156dp"
+        android:layout_marginTop="28dp"
         android:backgroundTint="@color/button_background"
         android:text="Edytuj"
         android:textColor="@color/text_light"

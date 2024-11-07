@@ -7,46 +7,73 @@
     android:background="@color/background_dark"
     tools:context=".EditDebtActivity">
 
-    <ImageView
-        android:id="@+id/notificationIcon"
+    <ImageButton
+        android:id="@+id/notificationButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="44dp"
+        android:contentDescription="@string/notifications_icon"
         android:src="@drawable/ic_bell"
+        android:scaleType="centerInside"
+        android:background="@android:color/transparent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:contentDescription="Notifications Icon" />
+        android:clickable="true"
+        android:focusable="true"/>
 
     <ImageButton
-        android:id="@+id/appLogoButton"
+        android:id="@+id/appLogo"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="156dp"
-        android:background="@null"
-        android:contentDescription="Back to Main"
+        android:contentDescription="@string/app_logo"
         android:src="@drawable/ic_add"
+        android:scaleType="centerInside"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="8dp"
+        android:clickable="true"
+        android:focusable="true"/>
+
+    <ImageButton
+        android:id="@+id/addingDebtsButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="316dp"
+        android:layout_marginTop="44dp"
+        android:contentDescription="@string/addingDebts_icon"
+        android:src="@drawable/ic_plus"
+        android:scaleType="centerInside"
+        android:background="@android:color/transparent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:clickable="true"
+        android:focusable="true"/>
+
+    <!-- missing dodany -->
 
     <EditText
         android:id="@+id/editDebtAmount"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:inputType="numberDecimal"
-        android:hint="Wysokość długu"
-        android:textColorHint="@color/text_light"
-        android:textColor="@color/text_light"
-        android:backgroundTint="@color/accent_blue"
-        android:padding="16dp"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/appLogoButton"
-        android:layout_marginTop="32dp"
         android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp" />
+        android:layout_marginTop="64dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/accent_blue"
+        android:hint="Wysokość długu"
+        android:inputType="numberDecimal"
+        android:padding="16dp"
+        android:textColor="@color/text_light"
+
+        android:textColorHint="@color/text_light"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/notificationButton"
+        tools:ignore="MissingConstraints" />
 
     <EditText
         android:id="@+id/editDebtTitle"
@@ -90,7 +117,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="224dp"
+        android:layout_marginTop="88dp"
         android:layout_marginEnd="16dp"
         android:backgroundTint="@color/button_background"
         android:text="Zapisz zmiany"

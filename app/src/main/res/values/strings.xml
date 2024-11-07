@@ -2,6 +2,7 @@
     <string name="app_name">Centus</string>
     <string name="notifications_icon">Notifications Icon</string>
     <string name="app_logo">App Logo</string>
+    <string name="addingDebts_icon">Dodawanie Długów</string> //DODANE
     <string name="d_ug_1">Dług 1</string>
     <string name="d_ug_2">Dług 2</string>
     <string name="grupy">Grupy</string>

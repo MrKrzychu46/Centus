@@ -8,14 +8,60 @@
     android:background="@color/background_dark"
     tools:context=".MyProfileActivity">
 
+    <ImageButton
+        android:id="@+id/notificationButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="44dp"
+        android:background="@android:color/transparent"
+        android:clickable="true"
+        android:contentDescription="@string/notifications_icon"
+        android:focusable="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_bell"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/appLogo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/transparent"
+        android:clickable="true"
+        android:contentDescription="@string/app_logo"
+        android:focusable="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_add"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/addingDebtsButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="316dp"
+        android:layout_marginTop="44dp"
+        android:background="@android:color/transparent"
+        android:clickable="true"
+        android:contentDescription="@string/addingDebts_icon"
+        android:focusable="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_plus"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
     <TextView
         android:id="@+id/profileTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="124dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginStart="140dp"
+        android:layout_marginTop="136dp"
         android:text="Moje Długi"
-        android:textColor="@color/coin_color"
+        android:textColor="@color/text_light"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,16 +71,19 @@
     <ListView
         android:id="@+id/myDebtsListView"
         android:layout_width="376dp"
-        android:layout_height="577dp"
+        android:layout_height="377dp"
         android:layout_margin="16dp"
         android:divider="@color/accent_yellow"
         android:dividerHeight="1dp"
         android:padding="8dp"
+        android:textColor="@color/text_light"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.542"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/profileTitle"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.155" />
+
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
@@ -75,6 +124,7 @@
             android:textColor="@color/text_light"
             android:layout_weight="1"
             tools:ignore="HardcodedText" />
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
