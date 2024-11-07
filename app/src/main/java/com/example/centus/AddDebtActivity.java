@@ -1,6 +1,7 @@
 package com.example.centus;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -101,17 +102,17 @@ public class AddDebtActivity extends Activity {
                 try {
                     double amount = Double.parseDouble(amountText);
                     Debt debt = new Debt(name, amount, additionalInfo);
-                    debtList.add(debt);  // Dodajemy dług do listy
-                    updateDebtListView();  // Aktualizacja widoku listy
-                    Toast.makeText(AddDebtActivity.this, "Dług dodany: " + name, Toast.LENGTH_SHORT).show();
+                    debtList.add(debt);
+                    updateDebtListView();
 
-                    // Zapisujemy długi do pliku po dodaniu
-                    saveDebtsToFile();
+                    // Przekaż nowy dług jako wynik do MainActivity
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("debtName", name);
+                    resultIntent.putExtra("debtAmount", amount);
+                    resultIntent.putExtra("debtInfo", additionalInfo);
+                    setResult(Activity.RESULT_OK, resultIntent);
 
-                    // Wyczyść pola po dodaniu
-                    nameEditText.setText("");
-                    amountEditText.setText("");
-                    infoEditText.setText("");
+                    finish(); // Zamknij AddDebtActivity po dodaniu długu
                 } catch (NumberFormatException e) {
                     Toast.makeText(AddDebtActivity.this, "Nieprawidłowa kwota", Toast.LENGTH_SHORT).show();
                 }
@@ -119,7 +120,7 @@ public class AddDebtActivity extends Activity {
         });
     }
 
-    // Metoda zapisująca długi do pliku
+        // Metoda zapisująca długi do pliku
     private void saveDebtsToFile() {
         try {
             // Tworzymy plik w lokalnej pamięci urządzenia
