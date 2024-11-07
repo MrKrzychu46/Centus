@@ -12,21 +12,49 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         tools:targetApi="31">
+
+        <!-- Dodaj aktywność AddDebtActivity -->
+        <activity
+            android:name=".AddDebtActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".OptionsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MyGroupsActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MyProfileActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".EditDebtActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".DebtDetailActivity"
+            android:exported="false" />
+
         <activity
             android:name=".NotificationActivity"
             android:exported="false" />
+
         <activity
             android:name=".Notification"
             android:exported="false" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
     </application>
 
 </manifest>
