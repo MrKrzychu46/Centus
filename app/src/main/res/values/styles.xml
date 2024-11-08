@@ -1,9 +1,12 @@
 <resources>
         <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+                        <item name="android:windowFullscreen">true</item>
                 <item name="colorPrimary">@color/accent_blue</item>
                 <item name="colorPrimaryVariant">@color/coin_color</item>
                 <item name="colorOnPrimary">@color/text_light</item>
                 <item name="android:windowBackground">@color/background_dark</item>
+                <item name="android:navigationBarColor">@android:color/black</item>
+
         </style>
 
         <style name="NavigationButtonStyle">

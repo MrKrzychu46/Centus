@@ -80,28 +80,28 @@
             android:id="@+id/groupsButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/grupy"
+            android:text="@string/grupy1"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/profileButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/profil"
+            android:text="@string/profil1"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/settingsButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="@string/ustawienia"
+            android:text="@string/ustawienia1"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
     </LinearLayout>
 

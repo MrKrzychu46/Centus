@@ -1,6 +1,7 @@
 package com.example.centus;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.content.Intent;
@@ -26,7 +27,10 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            getWindow().setNavigationBarColor(getResources().getColor(android.R.color.black)); // Black background
+            getWindow().getDecorView().setSystemUiVisibility(0); // Ensures default white icons
+        } //nawigacja!!!!!!!!!
         debtsLayout = findViewById(R.id.debtsLayout);
 
         loadDebtsFromFile(); // Załaduj istniejące długi z pliku
