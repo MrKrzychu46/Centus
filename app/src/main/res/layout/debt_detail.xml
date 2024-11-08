@@ -53,33 +53,13 @@
         android:focusable="true"/>
 
     <EditText
-        android:id="@+id/debtAmount"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="204dp"
-        android:layout_marginEnd="16dp"
-        android:backgroundTint="@color/accent_blue"
-        android:hint="Wysokość długu"
-        android:inputType="numberDecimal"
-        android:padding="16dp"
-        android:textColor="@color/text_light"
-        android:textColorHint="@color/text_light"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="HardcodedText" />
-
-    <EditText
         android:id="@+id/debtTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
-        android:backgroundTint="@color/accent_blue"
+        android:backgroundTint="@color/button_background"
         android:hint="Tytuł długu"
         android:inputType="text"
         android:padding="16dp"
@@ -89,17 +69,38 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/debtAmount"
+        app:layout_constraintTop_toBottomOf="@+id/appLogo"
         tools:ignore="HardcodedText" />
+
+    <EditText
+        android:id="@+id/debtAmount"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/button_background"
+        android:hint="Wysokość długu"
+        android:inputType="numberDecimal"
+        android:padding="16dp"
+        android:textColor="@color/text_light"
+        android:textColorHint="@color/text_light"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/debtTitle"
+        tools:ignore="HardcodedText" />
+
 
     <EditText
         android:id="@+id/debtDescription"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
-        android:backgroundTint="@color/accent_blue"
+        android:backgroundTint="@color/button_background"
         android:hint="Opis długu"
         android:inputType="textMultiLine"
         android:minLines="3"
@@ -110,7 +111,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/debtTitle"
+        app:layout_constraintTop_toBottomOf="@+id/debtAmount"
         tools:ignore="HardcodedText" />
 
     <Button

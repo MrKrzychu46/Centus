@@ -79,10 +79,8 @@ public class AddDebtActivity extends Activity {
         EditText amountEditText = findViewById(R.id.amountEditText);
         EditText infoEditText = findViewById(R.id.infoEditText);
         Button addDebtButton = findViewById(R.id.addDebtButton);
-        ListView debtListView = findViewById(R.id.debtListView);
 
         debtAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
-        debtListView.setAdapter(debtAdapter);
 
         updateDebtListView();
 

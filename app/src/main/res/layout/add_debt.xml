@@ -57,21 +57,25 @@
         android:id="@+id/nameEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Imię i nazwisko"
-        android:textColor="@color/text_light"
-        android:inputType="textPersonName"
-        app:layout_constraintTop_toBottomOf="@+id/appLogo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
         android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"/>
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:backgroundTint="@color/button_background"
+        android:hint="Tytuł długu"
+        android:inputType="textPersonName"
+        android:textColor="@color/text_light"
+        android:textColorHint="@color/text_light"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/appLogo" />
 
     <EditText
         android:id="@+id/amountEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Kwota długu"
+        android:backgroundTint="@color/button_background"
+        android:textColorHint="@color/text_light"
         android:textColor="@color/text_light"
         android:inputType="numberDecimal"
         app:layout_constraintTop_toBottomOf="@+id/nameEditText"
@@ -86,6 +90,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:hint="Dodatkowe informacje"
+        android:backgroundTint="@color/button_background"
+        android:textColorHint="@color/text_light"
         android:textColor="@color/text_light"
         android:inputType="textMultiLine"
         app:layout_constraintTop_toBottomOf="@+id/amountEditText"
@@ -106,18 +112,6 @@
         android:layout_marginTop="16dp"
         android:backgroundTint="@color/button_background"
         android:textColor="@color/text_light"/>
-
-    <ListView
-        android:id="@+id/debtListView"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:background="@color/background_dark"
-        app:layout_constraintTop_toBottomOf="@+id/addDebtButton"
-        app:layout_constraintBottom_toTopOf="@+id/bottomNav"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"/>
-
 
     <LinearLayout
         android:id="@+id/bottomNav"
