@@ -23,22 +23,18 @@ import java.util.ArrayList;
 public class AddDebtActivity extends Activity {
 
     public ArrayList<Debt> debtList = new ArrayList<>(); // Lista długów
-    private ArrayAdapter<String> debtAdapter; // Adapter dla ListView
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_debt);
 
-        // Odczytujemy długi z pliku
-        loadDebtsFromFile();
-
-        // Inicjalizujemy widoki, przyciski itd.
         ImageButton notificationsButton = findViewById(R.id.notificationButton);
         notificationsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Intent do innej aktywności (np. powiadomienia)
+                Intent intent = new Intent(AddDebtActivity.this, NotificationActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -46,33 +42,44 @@ public class AddDebtActivity extends Activity {
         mainButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Intent do innej aktywności (np. główny ekran)
+                Intent intent = new Intent(AddDebtActivity.this, MainActivity.class);
+                startActivity(intent);
             }
         });
 
-        ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
-        addingDebtsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Intent do dodawania długu (aktualnie w tej samej aktywności)
-            }
-        });
 
         Button profileButton = findViewById(R.id.profileButton);
+
         profileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Intent do aktywności profilu użytkownika
+                Intent intent = new Intent(AddDebtActivity.this, MyProfileActivity.class);
+                startActivity(intent);
+            }
+        });
+
+        Button groupsButton = findViewById(R.id.groupsButton);
+
+        groupsButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(AddDebtActivity.this, MyGroupsActivity.class);
+                startActivity(intent);
             }
         });
 
         Button settingsButton = findViewById(R.id.settingsButton);
+
         settingsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // Intent do aktywności ustawień
+                Intent intent = new Intent(AddDebtActivity.this, OptionsActivity.class);
+                startActivity(intent);
             }
         });
+
+        // Odczytujemy długi z pliku
+        loadDebtsFromFile();
 
         // Inicjalizujemy EditText oraz ListView
         EditText nameEditText = findViewById(R.id.nameEditText);
@@ -80,9 +87,6 @@ public class AddDebtActivity extends Activity {
         EditText infoEditText = findViewById(R.id.infoEditText);
         Button addDebtButton = findViewById(R.id.addDebtButton);
 
-        debtAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, new ArrayList<>());
-
-        updateDebtListView();
 
         // Ustawiamy kliknięcie przycisku "Dodaj dług"
         addDebtButton.setOnClickListener(new View.OnClickListener() {
@@ -101,7 +105,6 @@ public class AddDebtActivity extends Activity {
                     double amount = Double.parseDouble(amountText);
                     Debt debt = new Debt(name, amount, additionalInfo);
                     debtList.add(debt);
-                    updateDebtListView();
 
                     // Przekaż nowy dług jako wynik do MainActivity
                     Intent resultIntent = new Intent();
@@ -163,24 +166,6 @@ public class AddDebtActivity extends Activity {
         }
     }
 
-    // Metoda aktualizująca ListView
-    private void updateDebtListView() {
-        ArrayList<String> debtDescriptions = new ArrayList<>();
-
-        // Iterujemy po liście długów z numerowaniem
-        for (int i = 0; i < debtList.size(); i++) {
-            Debt debt = debtList.get(i);
-            // Dodajemy numer długu (i+1), ponieważ indeksowanie zaczyna się od 0
-            debtDescriptions.add((i + 1) + ". " + debt.name + " - " + debt.amount + " zł\n" + debt.additionalInfo);
-        }
-
-        // Czyszczenie adaptera
-        debtAdapter.clear();
-        // Dodanie nowych danych do adaptera
-        debtAdapter.addAll(debtDescriptions);
-        // Powiadomienie adaptera o zmianach
-        debtAdapter.notifyDataSetChanged();
-    }
 
 
     // Klasa reprezentująca dług

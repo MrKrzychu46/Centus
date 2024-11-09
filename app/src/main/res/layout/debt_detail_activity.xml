@@ -112,11 +112,12 @@
         android:id="@+id/debtDescriptionLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:text="Opis długu:"
         android:textColor="@color/text_light"
         android:textSize="18sp"
-        app:layout_constraintStart_toEndOf="@+id/debtTitle"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/debtAmount"
         tools:ignore="HardcodedText" />
 

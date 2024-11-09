@@ -30,7 +30,7 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             getWindow().setNavigationBarColor(getResources().getColor(android.R.color.black)); // Black background
             getWindow().getDecorView().setSystemUiVisibility(0); // Ensures default white icons
-        } //nawigacja!!!!!!!!!
+        } //nawigacja!!!!!!!!!`
         debtsLayout = findViewById(R.id.debtsLayout);
 
         loadDebtsFromFile(); // Załaduj istniejące długi z pliku
@@ -62,43 +62,45 @@ public class MainActivity extends AppCompatActivity {
 
     // Wyświetlanie długów na ekranie
     private void displayDebts() {
-        debtsLayout.removeAllViews(); // Wyczyść poprzednie przyciski
+        debtsLayout.removeAllViews(); // Wyczyść poprzednie widoki
 
-        for (int i = 0; i < debtList.size(); i++) {
-            Button debtButton = new Button(this);
-            AddDebtActivity.Debt debt = debtList.get(i);
-            debtButton.setText("Dług " + (i + 1) + ": " + debt.name);
+        // Sprawdź, czy lista długów nie jest pusta
+        if (debtList.isEmpty()) {
+            Toast.makeText(MainActivity.this, "Brak długów", Toast.LENGTH_SHORT).show();
+        } else {
+            // Dodaj przyciski dla każdego długu w liście
+            for (int i = 0; i < debtList.size(); i++) {
+                Button debtButton = new Button(this);
+                AddDebtActivity.Debt debt = debtList.get(i);
+                debtButton.setText("Dług " + (i + 1) + ": " + debt.name);
 
-            final int index = i; // Przechowuje indeks dla przycisku
-            debtButton.setOnClickListener(v -> {
-                Intent intent = new Intent(MainActivity.this, DebtDetailActivity.class);
-                intent.putExtra("debtTitle", debtList.get(index).name);
-                intent.putExtra("debtAmount", debtList.get(index).amount + " zł");
-                intent.putExtra("debtDescription", debtList.get(index).additionalInfo);
-                startActivity(intent);
-            });
+                // Przechowuj indeks dla przycisku
+                final int index = i;
+                debtButton.setOnClickListener(v -> {
+                    Intent intent = new Intent(MainActivity.this, DebtDetailActivity.class);
+                    intent.putExtra("debtTitle", debtList.get(index).name);
+                    intent.putExtra("debtAmount", debtList.get(index).amount + " zł");
+                    intent.putExtra("debtDescription", debtList.get(index).additionalInfo);
+                    startActivity(intent);
+                });
 
-            debtsLayout.addView(debtButton); // Dodaj przycisk do layoutu
+                debtsLayout.addView(debtButton); // Dodaj przycisk do layoutu
+            }
         }
 
+        // Przycisk do dodawania nowego długu
+        ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
+        addingDebtsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, AddDebtActivity.class);
+            startActivityForResult(intent, 1); // Uruchamiamy AddDebtActivity z kodem żądania 1
+        });
 
-    // Załaduj listę długów z pliku
-
-
-        // Set up other buttons
+        // Przyciski nawigacyjne
         ImageButton notificationsButton = findViewById(R.id.notificationButton);
         notificationsButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, NotificationActivity.class);
             startActivity(intent);
         });
-
-        ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
-        addingDebtsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, AddDebtActivity.class);
-            startActivity(intent);
-        });
-
-
 
         Button groupsButton = findViewById(R.id.groupsButton);
         groupsButton.setOnClickListener(v -> {
@@ -118,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
+
 
     // Load list of debts from file
     private void loadDebtsFromFile() {
