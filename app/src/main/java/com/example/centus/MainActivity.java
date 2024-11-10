@@ -7,6 +7,7 @@ import android.widget.LinearLayout;
 import android.content.Intent;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,60 +22,59 @@ public class MainActivity extends AppCompatActivity {
 
     private ArrayList<AddDebtActivity.Debt> debtList = new ArrayList<>();
     private LinearLayout debtsLayout;
+    private TextView totalDebtTextView; // Dodane pole dla widoku sumy długu
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            getWindow().setNavigationBarColor(getResources().getColor(android.R.color.black)); // Black background
-            getWindow().getDecorView().setSystemUiVisibility(0); // Ensures default white icons
-        } //nawigacja!!!!!!!!!`
+            getWindow().setNavigationBarColor(getResources().getColor(android.R.color.black));
+            getWindow().getDecorView().setSystemUiVisibility(0);
+        }
+
         debtsLayout = findViewById(R.id.debtsLayout);
+        totalDebtTextView = findViewById(R.id.totalDebtTextView); // Inicjalizacja widoku sumy długu
 
         loadDebtsFromFile(); // Załaduj istniejące długi z pliku
         displayDebts(); // Wyświetl listę długów
+        updateTotalDebt(); // Oblicz i wyświetl początkową sumę długu
 
         // Przycisk do dodawania nowego długu
         ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
         addingDebtsButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, AddDebtActivity.class);
-            startActivityForResult(intent, 1); // Uruchamiamy AddDebtActivity z kodem żądania 1
+            startActivityForResult(intent, 1);
         });
     }
 
-    // Obsługa wyniku z AddDebtActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            // Pobierz nowy dług z Intenta
             String name = data.getStringExtra("debtName");
             double amount = data.getDoubleExtra("debtAmount", 0.0);
             String additionalInfo = data.getStringExtra("debtInfo");
 
-            // Dodaj nowy dług do listy i odśwież wyświetlanie
             debtList.add(new AddDebtActivity.Debt(name, amount, additionalInfo));
-            displayDebts();
+            displayDebts(); // Odśwież listę długów
+            updateTotalDebt(); // Zaktualizuj sumę po dodaniu nowego długu
         }
     }
 
-    // Wyświetlanie długów na ekranie
     private void displayDebts() {
-        debtsLayout.removeAllViews(); // Wyczyść poprzednie widoki
+        debtsLayout.removeAllViews();
 
-        // Sprawdź, czy lista długów nie jest pusta
         if (debtList.isEmpty()) {
             Toast.makeText(MainActivity.this, "Brak długów", Toast.LENGTH_SHORT).show();
         } else {
-            // Dodaj przyciski dla każdego długu w liście
             for (int i = 0; i < debtList.size(); i++) {
                 Button debtButton = new Button(this);
                 AddDebtActivity.Debt debt = debtList.get(i);
                 debtButton.setText("Dług " + (i + 1) + ": " + debt.name);
 
-                // Przechowuj indeks dla przycisku
                 final int index = i;
                 debtButton.setOnClickListener(v -> {
                     Intent intent = new Intent(MainActivity.this, DebtDetailActivity.class);
@@ -84,9 +84,51 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(intent);
                 });
 
-                debtsLayout.addView(debtButton); // Dodaj przycisk do layoutu
+                debtsLayout.addView(debtButton);
             }
         }
+    }
+
+    // Nowa metoda obliczająca całkowitą sumę długu
+    private void updateTotalDebt() {
+        double totalDebt = calculateTotalDebt();
+        totalDebtTextView.setText("Bilans długu: " + totalDebt + " zł"); // Wyświetl sumę w interfejsie
+    }
+
+    // Pomocnicza metoda do obliczania sumy długów
+    private double calculateTotalDebt() {
+        double total = 0.0;
+        for (AddDebtActivity.Debt debt : debtList) {
+            total += debt.amount;
+        }
+        return total;
+    }
+
+    private void loadDebtsFromFile() {
+        try {
+            FileInputStream fis = openFileInput("debts.txt");
+            BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.contains(" - ")) {
+                    String[] parts = line.split(" - ");
+                    String name = parts[0];
+                    double amount = Double.parseDouble(parts[1].replace(" zł", ""));
+                    String additionalInfo = reader.readLine();
+                    debtList.add(new AddDebtActivity.Debt(name, amount, additionalInfo));
+                }
+            }
+
+            reader.close();
+            updateTotalDebt(); // Zaktualizuj sumę długu po załadowaniu z pliku
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Błąd odczytu z pliku", Toast.LENGTH_SHORT).show();
+        }
+
+
+
 
         // Przycisk do dodawania nowego długu
         ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
@@ -119,30 +161,5 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, OptionsActivity.class);
             startActivity(intent);
         });
-    }
-
-
-    // Load list of debts from file
-    private void loadDebtsFromFile() {
-        try {
-            FileInputStream fis = openFileInput("debts.txt");
-            BufferedReader reader = new BufferedReader(new InputStreamReader(fis));
-            String line;
-
-            while ((line = reader.readLine()) != null) {
-                if (line.contains(" - ")) {
-                    String[] parts = line.split(" - ");
-                    String name = parts[0];
-                    double amount = Double.parseDouble(parts[1].replace(" zł", ""));
-                    String additionalInfo = reader.readLine();
-                    debtList.add(new AddDebtActivity.Debt(name, amount, additionalInfo));
-                }
-            }
-
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Błąd odczytu z pliku", Toast.LENGTH_SHORT).show();
-        }
     }
 }
