@@ -6,8 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_dark"
-    tools:context=".AddDebtActivity">
+    tools:context=".AddUserActivity">
 
+    <!-- Przycisk powiadomień -->
     <ImageButton
         android:id="@+id/notificationButton"
         android:layout_width="40dp"
@@ -23,6 +24,7 @@
         android:clickable="true"
         android:focusable="true"/>
 
+    <!-- Logo aplikacji -->
     <ImageButton
         android:id="@+id/appLogo"
         android:layout_width="100dp"
@@ -38,6 +40,7 @@
         android:clickable="true"
         android:focusable="true"/>
 
+    <!-- Dodanie długu -->
     <ImageButton
         android:id="@+id/addingDebtsButton"
         android:layout_width="40dp"
@@ -53,77 +56,100 @@
         android:clickable="true"
         android:focusable="true"/>
 
+    <!-- Pole tekstowe Imię -->
     <EditText
-        android:id="@+id/nameEditText"
+        android:id="@+id/firstNameEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="32dp"
+        android:hint="Imię"
         android:backgroundTint="@color/button_background"
-        android:hint="Tytuł długu"
-        android:inputType="textPersonName"
-        android:textColor="@color/text_light"
         android:textColorHint="@color/text_light"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textColor="@color/text_light"
+        app:layout_constraintTop_toBottomOf="@id/appLogo"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appLogo" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"/>
 
+    <!-- Pole tekstowe Nazwisko -->
     <EditText
-        android:id="@+id/amountEditText"
+        android:id="@+id/lastNameEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Kwota długu"
+        android:hint="Nazwisko"
         android:backgroundTint="@color/button_background"
         android:textColorHint="@color/text_light"
         android:textColor="@color/text_light"
-        android:inputType="numberDecimal"
-        app:layout_constraintTop_toBottomOf="@+id/nameEditText"
+        app:layout_constraintTop_toBottomOf="@id/firstNameEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"/>
 
+    <!-- Pole tekstowe Telefon -->
     <EditText
-        android:id="@+id/infoEditText"
+        android:id="@+id/phoneEditText"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:hint="Dodatkowe informacje"
+        android:hint="Telefon"
         android:backgroundTint="@color/button_background"
         android:textColorHint="@color/text_light"
         android:textColor="@color/text_light"
-        android:inputType="textMultiLine"
-        app:layout_constraintTop_toBottomOf="@+id/amountEditText"
+        android:inputType="phone"
+        app:layout_constraintTop_toBottomOf="@id/lastNameEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="8dp"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"/>
 
-    <Button
-        android:id="@+id/addDebtButton"
-        android:layout_width="wrap_content"
+    <!-- Pole tekstowe Email -->
+    <EditText
+        android:id="@+id/emailEditText"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:text="Dodaj dług"
-        app:layout_constraintTop_toBottomOf="@+id/infoEditText"
+        android:hint="Email"
+        android:backgroundTint="@color/button_background"
+        android:textColorHint="@color/text_light"
+        android:textColor="@color/text_light"
+        android:inputType="textEmailAddress"
+        app:layout_constraintTop_toBottomOf="@id/phoneEditText"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="@color/button_background"
-        android:textColor="@color/text_light"/>
+        android:layout_marginTop="8dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"/>
 
+    <!-- Przycisk Dodaj użytkownika -->
     <Button
-        android:id="@+id/addingUsersButton"
+        android:id="@+id/addUserButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
-        android:backgroundTint="@color/button_background"
         android:text="Dodaj użytkownika"
+        android:backgroundTint="@color/button_background"
         android:textColor="@color/text_light"
-        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/emailEditText"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/infoEditText" />
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="32dp"/>
+
+    <!-- Dolny pasek nawigacyjny -->
+
+    <ListView
+        android:id="@+id/userListView"
+        android:layout_width="349dp"
+        android:layout_height="215dp"
+        android:layout_marginTop="32dp"
+        android:divider="@android:color/darker_gray"
+        android:dividerHeight="1dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.483"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/addUserButton"
+        app:layout_constraintVertical_bias="0.0"/>
 
     <LinearLayout
         android:id="@+id/bottomNav"

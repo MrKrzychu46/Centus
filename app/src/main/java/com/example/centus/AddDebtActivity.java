@@ -47,6 +47,15 @@ public class AddDebtActivity extends Activity {
             }
         });
 
+        Button addUsersButton = findViewById(R.id.addingUsersButton);
+        addUsersButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(AddDebtActivity.this, AddUserActivity.class);
+                startActivity(intent);
+            }
+        });
+
 
         Button profileButton = findViewById(R.id.profileButton);
 
