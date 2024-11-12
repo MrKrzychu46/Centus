@@ -1,14 +1,13 @@
 package com.example.centus;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -88,7 +87,7 @@ public class AddDebtActivity extends Activity {
             String name = nameEditText.getText().toString().trim();
             String amountText = amountEditText.getText().toString().trim();
             String additionalInfo = infoEditText.getText().toString().trim();
-            String selectedUser = (String) userSpinner.getSelectedItem(); // Wybrany użytkownik
+            String selectedUser = (String) userSpinner.getSelectedItem();
 
             if (name.isEmpty() || amountText.isEmpty() || selectedUser == null || selectedUser.isEmpty()) {
                 Toast.makeText(AddDebtActivity.this, "Proszę wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
@@ -97,26 +96,51 @@ public class AddDebtActivity extends Activity {
 
             try {
                 double amount = Double.parseDouble(amountText);
+
+                // Nowe sprawdzenie, czy kwota jest większa od zera i mniejsza od limitu
+                if (amount <= 0 || amount > 1_000_000) {
+                    Toast.makeText(AddDebtActivity.this, "Kwota musi być dodatnia i nie większa niż 1,000,000", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 Debt debt = new Debt(name, amount, additionalInfo, selectedUser);
                 debtList.add(debt);
                 saveDebtToFile(debt);
 
-                // Przekazujemy dane o nowym długu do MainActivity
+                // Kontynuujemy tak jak wcześniej
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("debtName", name);
                 resultIntent.putExtra("debtAmount", amount);
                 resultIntent.putExtra("debtInfo", additionalInfo);
-                resultIntent.putExtra("debtUser", selectedUser); // Przekazujemy użytkownika
+                resultIntent.putExtra("debtUser", selectedUser);
                 setResult(Activity.RESULT_OK, resultIntent);
 
-                Intent intent = new Intent(AddDebtActivity.this, MainActivity.class);
-                startActivity(intent);
-                finish(); // Zamykamy AddDebtActivity
+
+
+                new AlertDialog.Builder(AddDebtActivity.this)
+                        .setTitle("Potwierdzenie")
+                        .setMessage("Dług został dodany. Czy chcesz wrócić do ekranu głównego?")
+                        .setPositiveButton("Tak", (dialog, which) -> {
+                            Intent intent = new Intent(AddDebtActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        })
+                        .setNegativeButton("Nie", (dialog, which) -> {
+                            // Czyszczenie pól formularza
+                            nameEditText.setText("");
+                            amountEditText.setText("");
+                            infoEditText.setText("");
+                            userSpinner.setSelection(0); // Przywracamy domyślną wartość w Spinnerze
+                        })
+                        .show();
+
+
 
             } catch (NumberFormatException e) {
                 Toast.makeText(AddDebtActivity.this, "Nieprawidłowa kwota", Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     private void saveDebtToFile(Debt debt) {
@@ -140,7 +164,6 @@ public class AddDebtActivity extends Activity {
             while ((line = reader.readLine()) != null) {
                 String[] userData = line.split(";");
                 if (userData.length == 4) {
-                    // Dodajemy imię i nazwisko użytkownika do listy (np. "Jan Kowalski")
                     String fullName = userData[0] + " " + userData[1];
                     userList.add(fullName);
                 }
@@ -150,7 +173,13 @@ public class AddDebtActivity extends Activity {
             e.printStackTrace();
             Toast.makeText(this, "Błąd odczytu użytkowników", Toast.LENGTH_SHORT).show();
         }
+
+        // Sprawdzenie, czy lista jest pusta
+        if (userList.isEmpty()) {
+            Toast.makeText(this, "Brak zapisanych użytkowników. Dodaj użytkowników, aby kontynuować.", Toast.LENGTH_LONG).show();
+        }
     }
+
 
     // Klasa reprezentująca dług
     public static class Debt {
