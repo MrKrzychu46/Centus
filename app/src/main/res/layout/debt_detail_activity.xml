@@ -1,4 +1,3 @@
-
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -9,8 +8,6 @@
     tools:context=".DebtDetailActivity">
 
     <!-- Górna część layoutu z ikonami powiadomień i logo -->
-
-    <!-- Wyświetlanie szczegółów długu -->
 
     <ImageButton
         android:id="@+id/notificationButton"
@@ -57,32 +54,7 @@
         android:clickable="true"
         android:focusable="true"/>
 
-    <!-- missing dodany -->
-
-    <TextView
-        android:id="@+id/debtAmountLabel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-
-        android:layout_marginTop="16dp"
-        android:text="Wysokość długu:"
-        android:textColor="@color/text_light"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/debtTitle"
-        tools:ignore="HardcodedText,MissingConstraints" />
-
-    <TextView
-        android:id="@+id/debtAmount"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/text_light"
-        android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/debtAmountLabel"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp" />
+    <!-- Szczegóły długu -->
 
     <TextView
         android:id="@+id/debtTitleLabel"
@@ -94,8 +66,7 @@
         android:textColor="@color/text_light"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appLogo"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@+id/appLogo" />
 
     <TextView
         android:id="@+id/debtTitle"
@@ -109,6 +80,29 @@
         android:layout_marginTop="8dp" />
 
     <TextView
+        android:id="@+id/debtAmountLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Wysokość długu:"
+        android:textColor="@color/text_light"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/debtTitle" />
+
+    <TextView
+        android:id="@+id/debtAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_light"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/debtAmountLabel"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
+    <TextView
         android:id="@+id/debtDescriptionLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -118,8 +112,7 @@
         android:textColor="@color/text_light"
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/debtAmount"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@+id/debtAmount" />
 
     <TextView
         android:id="@+id/debtDescription"
@@ -129,6 +122,31 @@
         android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/debtDescriptionLabel"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp" />
+
+    <!-- Sekcja Użytkownika długu -->
+
+    <TextView
+        android:id="@+id/debtUserLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:text="Dłużnik:"
+        android:textColor="@color/text_light"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/debtDescription" />
+
+    <TextView
+        android:id="@+id/debtUser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/text_light"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/debtUserLabel"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp" />
 
@@ -144,19 +162,18 @@
         android:text="Edytuj"
         android:textColor="@color/text_light"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/debtDescription"
-        tools:ignore="HardcodedText" />
+        app:layout_constraintTop_toBottomOf="@id/debtUser" />
 
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:gravity="center"
-        android:layout_marginBottom="16dp">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <Button
             android:id="@+id/groupsButton"

@@ -28,7 +28,7 @@ public class AddUserActivity extends Activity {
     private EditText phoneEditText;
     private EditText emailEditText;
     private Button addUserButton;
-    private ArrayList<String> userList;
+    private ArrayList<User> userList;
     private ArrayAdapter<String> userAdapter;
     private ListView userListView;
 
@@ -38,65 +38,44 @@ public class AddUserActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_user);
 
-        //Przyciski nawigacji
+        // Przyciski nawigacji
         ImageButton notificationsButton = findViewById(R.id.notificationButton);
-        notificationsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AddUserActivity.this, NotificationActivity.class);
-                startActivity(intent);
-            }
+        notificationsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AddUserActivity.this, NotificationActivity.class);
+            startActivity(intent);
         });
 
         ImageButton mainButton = findViewById(R.id.appLogo);
-        mainButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AddUserActivity.this, MainActivity.class);
-                startActivity(intent);
-            }
+        mainButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AddUserActivity.this, MainActivity.class);
+            startActivity(intent);
         });
 
-        ImageButton DebtsButton = findViewById(R.id.addingDebtsButton);
-        DebtsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(AddUserActivity.this, AddDebtActivity.class);
-                startActivity(intent);
-            }
+        ImageButton debtsButton = findViewById(R.id.addingDebtsButton);
+        debtsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AddUserActivity.this, AddDebtActivity.class);
+            startActivity(intent);
         });
-
 
         Button profileButton = findViewById(R.id.profileButton);
-
-        profileButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(AddUserActivity.this, MyProfileActivity.class);
-                startActivity(intent);
-            }
+        profileButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AddUserActivity.this, MyProfileActivity.class);
+            startActivity(intent);
         });
 
         Button groupsButton = findViewById(R.id.groupsButton);
-
-        groupsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(AddUserActivity.this, MyGroupsActivity.class);
-                startActivity(intent);
-            }
+        groupsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AddUserActivity.this, MyGroupsActivity.class);
+            startActivity(intent);
         });
 
         Button settingsButton = findViewById(R.id.settingsButton);
-
-        settingsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(AddUserActivity.this, OptionsActivity.class);
-                startActivity(intent);
-            }
+        settingsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AddUserActivity.this, OptionsActivity.class);
+            startActivity(intent);
         });
 
+        // Inicjalizacja elementów UI
         firstNameEditText = findViewById(R.id.firstNameEditText);
         lastNameEditText = findViewById(R.id.lastNameEditText);
         phoneEditText = findViewById(R.id.phoneEditText);
@@ -108,34 +87,25 @@ public class AddUserActivity extends Activity {
         loadUsersFromFile();
 
         userListView.setOnItemLongClickListener((parent, view, position, id) -> {
-            String user = userList.get(position);
+            User user = userList.get(position);
             userList.remove(position);
-            userAdapter.notifyDataSetChanged();
+            updateUserAdapter();
             saveUsersToFile();
-            Toast.makeText(AddUserActivity.this, "Usunięto użytkownika: " + user, Toast.LENGTH_SHORT).show();
+            Toast.makeText(AddUserActivity.this, "Usunięto użytkownika: " + user.getEmail(), Toast.LENGTH_SHORT).show();
             return true;
         });
 
-        // Adapter do wyświetlania danych w ListView
-        userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, userList);
-        userListView.setAdapter(userAdapter);
+        addUserButton.setOnClickListener(v -> addUser());
 
-        addUserButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addUser();
-            }
-        });
+        updateUserAdapter();
     }
 
     private void addUser() {
-        // Pobieranie danych z pól tekstowych
         String firstName = firstNameEditText.getText().toString().trim();
         String lastName = lastNameEditText.getText().toString().trim();
         String phone = phoneEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
 
-        // Walidacja danych
         if (firstName.isEmpty() || lastName.isEmpty() || phone.isEmpty() || email.isEmpty()) {
             Toast.makeText(this, "Wypełnij wszystkie wymagane pola!", Toast.LENGTH_SHORT).show();
             return;
@@ -151,34 +121,18 @@ public class AddUserActivity extends Activity {
             return;
         }
 
-        // Tworzenie ciągu z danymi użytkownika
-        String userInfo = firstName + " " + lastName + " - " + phone + " - " + email;
-
-        // Przekształcenie ciągu na małe litery dla porównania
-        String userInfoLowerCase = userInfo.toLowerCase();
-
-        // Sprawdzenie, czy użytkownik już istnieje (ignorując wielkość liter)
-        boolean userExists = false;
-        for (String user : userList) {
-            if (user.toLowerCase().equals(userInfoLowerCase)) {
-                userExists = true;
-                break;
+        for (User user : userList) {
+            if (user.getEmail().equalsIgnoreCase(email)) {
+                Toast.makeText(this, "Użytkownik z tym emailem już istnieje!", Toast.LENGTH_SHORT).show();
+                return;
             }
         }
 
-        if (userExists) {
-            Toast.makeText(this, "Użytkownik już istnieje!", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        // Dodanie użytkownika do listy
-        userList.add(userInfo);
-        userAdapter.notifyDataSetChanged();
-
-        // Zapisanie użytkownika do pliku
+        User newUser = new User(firstName, lastName, phone, email);
+        userList.add(newUser);
+        updateUserAdapter();
         saveUsersToFile();
 
-        // Czyszczenie pól formularza
         firstNameEditText.setText("");
         lastNameEditText.setText("");
         phoneEditText.setText("");
@@ -186,39 +140,46 @@ public class AddUserActivity extends Activity {
         Toast.makeText(this, "Użytkownik dodany!", Toast.LENGTH_SHORT).show();
     }
 
-
-
-
+    private void updateUserAdapter() {
+        ArrayList<String> userStrings = new ArrayList<>();
+        for (User user : userList) {
+            userStrings.add(user.toString());
+        }
+        userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, userStrings);
+        userListView.setAdapter(userAdapter);
+    }
 
     private void saveUsersToFile() {
         try (FileOutputStream fos = openFileOutput("users.txt", MODE_PRIVATE);
              BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos))) {
 
-            for (String user : userList) {
-                writer.write(user);
+            for (User user : userList) {
+                writer.write(user.getFirstName() + ";" + user.getLastName() + ";" + user.getPhone() + ";" + user.getEmail());
                 writer.newLine();
             }
-
-            Toast.makeText(this, "Użytkownik zapisany!", Toast.LENGTH_SHORT).show();
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, "Błąd zapisu użytkownika", Toast.LENGTH_SHORT).show();
         }
     }
 
-
     private void loadUsersFromFile() {
+        userList.clear();
         try (FileInputStream fis = openFileInput("users.txt");
              BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                userList.add(line);
+                String[] userData = line.split(";");
+                if (userData.length == 4) {
+                    User user = new User(userData[0], userData[1], userData[2], userData[3]);
+                    userList.add(user);
+                }
             }
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, "Błąd odczytu użytkowników", Toast.LENGTH_SHORT).show();
         }
+        updateUserAdapter();
     }
-
 }

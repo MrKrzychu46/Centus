@@ -53,6 +53,21 @@
         android:clickable="true"
         android:focusable="true"/>
 
+
+    <Spinner
+        android:id="@+id/userSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="110dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="32dp"
+        android:backgroundTint="@color/text_light"
+        android:spinnerMode="dropdown"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/infoEditText" />
+
     <EditText
         android:id="@+id/nameEditText"
         android:layout_width="0dp"
@@ -105,25 +120,24 @@
         android:id="@+id/addDebtButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Dodaj dług"
-        app:layout_constraintTop_toBottomOf="@+id/infoEditText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="16dp"
         android:backgroundTint="@color/button_background"
-        android:textColor="@color/text_light"/>
+        android:text="Dodaj dług"
+        android:textColor="@color/text_light"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userSpinner" />
 
     <Button
         android:id="@+id/addingUsersButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
         android:backgroundTint="@color/button_background"
         android:text="Dodaj użytkownika"
         android:textColor="@color/text_light"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/infoEditText" />
+        app:layout_constraintTop_toBottomOf="@+id/addDebtButton" />
 
     <LinearLayout
         android:id="@+id/bottomNav"
@@ -164,5 +178,18 @@
             android:layout_weight="1"/>
 
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/debtTitleLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:text="Dłużnik:"
+        android:textColor="@color/text_light"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/infoEditText" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
