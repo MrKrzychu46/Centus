@@ -78,7 +78,7 @@ public class DebtDetailActivity extends AppCompatActivity {
     private void loadDebtsFromFile() {
         debtList.clear(); // Czyścimy listę przed załadowaniem danych
         try (FileInputStream fis = openFileInput("debts.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
+             BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"))) {
 
             String line;
             while ((line = reader.readLine()) != null) {

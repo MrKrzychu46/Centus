@@ -86,6 +86,7 @@ public class AddUserActivity extends Activity {
         userList = new ArrayList<>();
         loadUsersFromFile();
 
+        // Obsługa usuwania użytkownika przy długim kliknięciu
         userListView.setOnItemLongClickListener((parent, view, position, id) -> {
             User user = userList.get(position);
             userList.remove(position);
@@ -151,7 +152,7 @@ public class AddUserActivity extends Activity {
 
     private void saveUsersToFile() {
         try (FileOutputStream fos = openFileOutput("users.txt", MODE_PRIVATE);
-             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos))) {
+             BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"))) {
 
             for (User user : userList) {
                 writer.write(user.getFirstName() + ";" + user.getLastName() + ";" + user.getPhone() + ";" + user.getEmail());
@@ -166,7 +167,7 @@ public class AddUserActivity extends Activity {
     private void loadUsersFromFile() {
         userList.clear();
         try (FileInputStream fis = openFileInput("users.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
+             BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"))) {
 
             String line;
             while ((line = reader.readLine()) != null) {

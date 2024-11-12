@@ -121,7 +121,7 @@ public class AddDebtActivity extends Activity {
 
     private void saveDebtToFile(Debt debt) {
         try (FileOutputStream fos = openFileOutput("debts.txt", MODE_APPEND);
-             OutputStreamWriter writer = new OutputStreamWriter(fos)) {
+             OutputStreamWriter writer = new OutputStreamWriter(fos, "UTF-8")) {
             String debtData = debt.name + ";" + debt.amount + ";" + debt.additionalInfo + ";" + debt.user + "\n";
             writer.write(debtData);
         } catch (IOException e) {
@@ -134,7 +134,7 @@ public class AddDebtActivity extends Activity {
     private void loadUsersFromFile() {
         userList.clear();
         try (FileInputStream fis = openFileInput("users.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
+             BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"))) {
 
             String line;
             while ((line = reader.readLine()) != null) {

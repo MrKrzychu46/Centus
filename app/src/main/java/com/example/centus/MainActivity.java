@@ -158,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
     private void loadDebtsFromFile() {
         debtList.clear();
         try (FileInputStream fis = openFileInput("debts.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fis))) {
+             BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
