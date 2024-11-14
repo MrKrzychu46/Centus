@@ -19,6 +19,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 public class MainActivity extends AppCompatActivity {
 
     private ArrayList<AddDebtActivity.Debt> debtList = new ArrayList<>();
@@ -67,6 +71,34 @@ public class MainActivity extends AppCompatActivity {
         settingsButton.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, OptionsActivity.class);
             startActivity(intent);
+        });
+
+        TextView textViewResults = findViewById(R.id.textViewResults);
+        Button buttonCalculate = findViewById(R.id.buttonCalculate);
+
+        buttonCalculate.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // Przykładowe dane zobowiązań
+                Map<String, Map<String, Integer>> debts = new HashMap<>();
+                debts.put("Krzysiek", Map.of("Piotrek", 50, "Seba", 30));
+                debts.put("Piotrek", Map.of("Seba", 40));
+                debts.put("Seba", Map.of("Krzysiek", 20));
+
+                // Wywołanie metody do obliczeń i minimalizacji
+                Map<String, Integer> balances = DebtMinimization.calculateBalances(debts);
+                List<DebtMinimization.Transaction> transactions = DebtMinimization.minimizeTransactions(balances);
+
+                // Wyświetlanie wyników
+                StringBuilder resultText = new StringBuilder();
+                for (DebtMinimization.Transaction transaction : transactions) {
+                    resultText.append(transaction.toString()).append("\n");
+                }
+
+                // Ustawienie tekstu w TextView
+                textViewResults.setText(resultText.toString());
+            }
         });
     }
 
