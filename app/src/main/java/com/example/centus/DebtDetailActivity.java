@@ -13,8 +13,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +24,7 @@ public class DebtDetailActivity extends AppCompatActivity {
 
     // Deklaracja listy długów
     private List<AddDebtActivity.Debt> debtList = new ArrayList<>();
+    private String currentDebtName; // Zmienna do przechowywania nazwy bieżącego długu
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,6 +38,8 @@ public class DebtDetailActivity extends AppCompatActivity {
         String debtTitle = getIntent().getStringExtra("debtTitle");
         String debtDescription = getIntent().getStringExtra("debtDescription");
         String debtUser = getIntent().getStringExtra("debtUser"); // Odbieramy użytkownika
+
+        currentDebtName = debtTitle; // Zapisujemy nazwę dług
 
         // Ustawienie wartości tekstowych
         TextView debtAmountView = findViewById(R.id.debtAmount);
@@ -52,6 +57,14 @@ public class DebtDetailActivity extends AppCompatActivity {
         editDebtButton.setOnClickListener(v -> {
             Intent intent = new Intent(DebtDetailActivity.this, EditDebtActivity.class);
             startActivity(intent);
+        });
+
+        // Obsługa przycisku usuwania długu
+        Button deleteDebtButton = findViewById(R.id.deleteDebtButton);
+        deleteDebtButton.setOnClickListener(v -> {
+            removeDebt(); // Usuwamy dług
+            Toast.makeText(DebtDetailActivity.this, "Dług został usunięty", Toast.LENGTH_SHORT).show();
+            finish(); // Zakończ aktywność
         });
 
         // Obsługa przycisków nawigacyjnych
@@ -72,6 +85,31 @@ public class DebtDetailActivity extends AppCompatActivity {
             Intent intent = new Intent(DebtDetailActivity.this, AddDebtActivity.class);
             startActivity(intent);
         });
+    }
+
+    // Metoda do usuwania długu z listy i zapisania zmian w pliku
+    private void removeDebt() {
+        for (int i = 0; i < debtList.size(); i++) {
+            if (debtList.get(i).name.equals(currentDebtName)) {
+                debtList.remove(i); // Usuwamy dług z listy
+                saveDebtsToFile(); // Zapisujemy po usunięciu
+                break;
+            }
+        }
+    }
+
+    // Zapis długów do pliku
+    private void saveDebtsToFile() {
+        try (FileOutputStream fos = openFileOutput("debts.txt", MODE_PRIVATE);
+             OutputStreamWriter writer = new OutputStreamWriter(fos)) {
+
+            for (AddDebtActivity.Debt debt : debtList) {
+                writer.write(debt.name + ";" + debt.amount + ";" + debt.additionalInfo + ";" + debt.user + "\n");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Błąd zapisu do pliku", Toast.LENGTH_SHORT).show();
+        }
     }
 
     // Metoda do ładowania długów z pliku (nowy format CSV)

@@ -119,7 +119,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     // Aktualizacja sumy długów
     private void updateTotalDebt() {
         double totalDebt = calculateTotalDebt();
@@ -175,5 +174,18 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(this, "Błąd odczytu z pliku", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+
+
+
+    // Metoda wywoływana po powrocie do MainActivity
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadDebtsFromFile();  // Ponowne wczytywanie długów z pliku
+        displayDebts();       // Wyświetlanie długów po aktualizacji
+        updateTotalDebt();    // Ponowne wczytywanie sumy długów
     }
 }
