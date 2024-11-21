@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,12 +19,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.mail.AuthenticationFailedException;
+import javax.mail.MessagingException;
 
 public class AddDebtActivity extends Activity {
 
     private ArrayList<String> userList = new ArrayList<>();
-    private ArrayList<Debt> debtList = new ArrayList<>(); // Lista długów
-    private Spinner userSpinner; // Pole wyboru użytkownika
+    private HashMap<String, String> userEmailMap = new HashMap<>(); // Mapowanie użytkowników na e-maile
+    private ArrayList<Debt> debtList = new ArrayList<>();
+    private Spinner userSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,22 +73,22 @@ public class AddDebtActivity extends Activity {
             startActivity(intent);
         });
 
-        // Ładujemy użytkowników z pliku
+        // Ładowanie użytkowników z pliku
         loadUsersFromFile();
 
-        // Inicjalizujemy spinner (pole wyboru użytkownika)
+        // Inicjalizacja spinnera
         userSpinner = findViewById(R.id.userSpinner);
         ArrayAdapter<String> userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, userList);
         userAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         userSpinner.setAdapter(userAdapter);
 
-        // Inicjalizujemy pola i przyciski
+        // Inicjalizacja pól i przycisków
         EditText nameEditText = findViewById(R.id.nameEditText);
         EditText amountEditText = findViewById(R.id.amountEditText);
         EditText infoEditText = findViewById(R.id.infoEditText);
         Button addDebtButton = findViewById(R.id.addDebtButton);
 
-        // Obsługa kliknięcia przycisku "Dodaj dług"
+        // Obsługa przycisku "Dodaj dług"
         addDebtButton.setOnClickListener(v -> {
             String name = nameEditText.getText().toString().trim();
             String amountText = amountEditText.getText().toString().trim();
@@ -94,10 +100,15 @@ public class AddDebtActivity extends Activity {
                 return;
             }
 
+            String selectedEmail = userEmailMap.get(selectedUser);
+            if (selectedEmail == null || selectedEmail.isEmpty()) {
+                Toast.makeText(AddDebtActivity.this, "Nie znaleziono adresu e-mail dla wybranego użytkownika", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
             try {
                 double amount = Double.parseDouble(amountText);
 
-                // Nowe sprawdzenie, czy kwota jest większa od zera i mniejsza od limitu
                 if (amount <= 0 || amount > 1_000_000) {
                     Toast.makeText(AddDebtActivity.this, "Kwota musi być dodatnia i nie większa niż 1,000,000", Toast.LENGTH_SHORT).show();
                     return;
@@ -107,15 +118,36 @@ public class AddDebtActivity extends Activity {
                 debtList.add(debt);
                 saveDebtToFile(debt);
 
-                // Kontynuujemy tak jak wcześniej
+                // Automatyczne wysyłanie e-maila
+                new Thread(() -> {
+                    try {
+                        MailSender mailSender = new MailSender("centuscentaury@gmail.com", "oduu ebfs tiie rdol");
+                        String subject = "Powiadomienie o nowym długu";
+                        String messageBody = "Witaj,\n\n" +
+                                "Zostałeś dodany jako dłużnik w aplikacji Centus. Szczegóły dotyczące długu:\n\n" +
+                                "Nazwa długu: " + name + "\n" +
+                                "Kwota: " + amount + " zł\n" +
+                                (additionalInfo.isEmpty() ? "" : "Dodatkowe informacje: " + additionalInfo + "\n\n") +
+                                "Prosimy o kontakt w celu rozliczenia.\n\n" +
+                                "Pozdrawiamy,\n" +
+                                "Zespół Centus";
+
+                        mailSender.sendEmail(selectedEmail, subject, messageBody);
+
+                        runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "E-mail został pomyślnie wysłany do dłużnika.", Toast.LENGTH_SHORT).show());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Błąd podczas wysyłania e-maila.", Toast.LENGTH_SHORT).show());
+                    }
+                }).start();
+
+                // Kontynuacja działania aplikacji
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("debtName", name);
                 resultIntent.putExtra("debtAmount", amount);
                 resultIntent.putExtra("debtInfo", additionalInfo);
                 resultIntent.putExtra("debtUser", selectedUser);
                 setResult(Activity.RESULT_OK, resultIntent);
-
-
 
                 new AlertDialog.Builder(AddDebtActivity.this)
                         .setTitle("Potwierdzenie")
@@ -126,21 +158,17 @@ public class AddDebtActivity extends Activity {
                             finish();
                         })
                         .setNegativeButton("Nie", (dialog, which) -> {
-                            // Czyszczenie pól formularza
                             nameEditText.setText("");
                             amountEditText.setText("");
                             infoEditText.setText("");
-                            userSpinner.setSelection(0); // Przywracamy domyślną wartość w Spinnerze
+                            userSpinner.setSelection(0);
                         })
                         .show();
-
-
 
             } catch (NumberFormatException e) {
                 Toast.makeText(AddDebtActivity.this, "Nieprawidłowa kwota", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
     private void saveDebtToFile(Debt debt) {
@@ -154,9 +182,9 @@ public class AddDebtActivity extends Activity {
         }
     }
 
-    // Metoda do ładowania użytkowników z pliku i parsowania danych
     private void loadUsersFromFile() {
         userList.clear();
+        userEmailMap.clear();
         try (FileInputStream fis = openFileInput("users.txt");
              BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"))) {
 
@@ -165,7 +193,9 @@ public class AddDebtActivity extends Activity {
                 String[] userData = line.split(";");
                 if (userData.length == 4) {
                     String fullName = userData[0] + " " + userData[1];
+                    String email = userData[3];
                     userList.add(fullName);
+                    userEmailMap.put(fullName, email);
                 }
             }
 
@@ -174,19 +204,16 @@ public class AddDebtActivity extends Activity {
             Toast.makeText(this, "Błąd odczytu użytkowników", Toast.LENGTH_SHORT).show();
         }
 
-        // Sprawdzenie, czy lista jest pusta
         if (userList.isEmpty()) {
             Toast.makeText(this, "Brak zapisanych użytkowników. Dodaj użytkowników, aby kontynuować.", Toast.LENGTH_LONG).show();
         }
     }
 
-
-    // Klasa reprezentująca dług
     public static class Debt {
         String name;
         double amount;
         String additionalInfo;
-        String user; // Dodane pole dla użytkownika
+        String user;
 
         public Debt(String name, double amount, String additionalInfo, String user) {
             this.name = name;
