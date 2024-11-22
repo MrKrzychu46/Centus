@@ -107,7 +107,8 @@ public class AddDebtActivity extends Activity {
             }
 
             try {
-                double amount = Double.parseDouble(amountText);
+                String sanitizedAmountText = amountText.replaceAll("[^0-9.,]", "").replace(",", ".");
+                double amount = Double.parseDouble(sanitizedAmountText);
 
                 if (amount <= 0 || amount > 1_000_000) {
                     Toast.makeText(AddDebtActivity.this, "Kwota musi być dodatnia i nie większa niż 1,000,000", Toast.LENGTH_SHORT).show();

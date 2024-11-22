@@ -22,49 +22,80 @@ import java.util.List;
 
 public class DebtDetailActivity extends AppCompatActivity {
 
-    // Deklaracja listy długów
     private List<AddDebtActivity.Debt> debtList = new ArrayList<>();
-    private String currentDebtName; // Zmienna do przechowywania nazwy bieżącego długu
+    private String currentDebtName;
+
+    // Deklaracja widoków jako pola klasy
+    private TextView debtTitleView, debtAmountView, debtDescriptionView, debtUserView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.debt_detail_activity);
 
-        loadDebtsFromFile(); // Ładowanie długów z pliku
+        // Inicjalizacja widoków
+        debtTitleView = findViewById(R.id.debtTitle);
+        debtAmountView = findViewById(R.id.debtAmount);
+        debtDescriptionView = findViewById(R.id.debtDescription);
+        debtUserView = findViewById(R.id.debtUser);
+
+        loadDebtsFromFile();
 
         // Pobranie szczegółów długu z Intenta
         String debtAmount = getIntent().getStringExtra("debtAmount");
         String debtTitle = getIntent().getStringExtra("debtTitle");
         String debtDescription = getIntent().getStringExtra("debtDescription");
-        String debtUser = getIntent().getStringExtra("debtUser"); // Odbieramy użytkownika
+        String debtUser = getIntent().getStringExtra("debtUser");
 
-        currentDebtName = debtTitle; // Zapisujemy nazwę dług
+        currentDebtName = debtTitle;
 
         // Ustawienie wartości tekstowych
-        TextView debtAmountView = findViewById(R.id.debtAmount);
-        TextView debtTitleView = findViewById(R.id.debtTitle);
-        TextView debtDescriptionView = findViewById(R.id.debtDescription);
-        TextView debtUserView = findViewById(R.id.debtUser); // Dodajemy pole użytkownika
-
         debtAmountView.setText(debtAmount);
         debtTitleView.setText(debtTitle);
         debtDescriptionView.setText(debtDescription);
-        debtUserView.setText(debtUser); // Wyświetlamy użytkownika
+        debtUserView.setText(debtUser);
 
         // Obsługa przycisku edycji długu
         Button editDebtButton = findViewById(R.id.editDebtButton);
         editDebtButton.setOnClickListener(v -> {
             Intent intent = new Intent(DebtDetailActivity.this, EditDebtActivity.class);
-            startActivity(intent);
+            intent.putExtra("debtName", debtTitle); // Tytuł długu
+
+            try {
+                if (debtAmount == null || debtAmount.isEmpty()) {
+                    Toast.makeText(this, "Kwota długu jest pusta", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Usuwamy niepotrzebne znaki, zamieniamy przecinki na kropki
+                String sanitizedAmountText = debtAmount.replaceAll("[^0-9.,]", "").replace(",", ".");
+                double amount = Double.parseDouble(sanitizedAmountText);
+
+                if (amount <= 0 || amount > 1_000_000) {
+                    Toast.makeText(this, "Kwota musi być dodatnia i nie większa niż 1,000,000", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Dodajemy poprawnie sparsowaną kwotę do Intenta
+                intent.putExtra("debtAmount", amount);
+            } catch (NumberFormatException e) {
+                Toast.makeText(this, "Nieprawidłowy format kwoty", Toast.LENGTH_SHORT).show();
+                e.printStackTrace();
+                return;
+            }
+
+            intent.putExtra("debtInfo", debtDescription); // Opis długu
+            intent.putExtra("debtUser", debtUser);        // Nazwa użytkownika długu
+            startActivityForResult(intent, 1);            // Start aktywności edycji
         });
+
 
         // Obsługa przycisku usuwania długu
         Button deleteDebtButton = findViewById(R.id.deleteDebtButton);
         deleteDebtButton.setOnClickListener(v -> {
-            removeDebt(); // Usuwamy dług
+            removeDebt();
             Toast.makeText(DebtDetailActivity.this, "Dług został usunięty", Toast.LENGTH_SHORT).show();
-            finish(); // Zakończ aktywność
+            finish();
         });
 
         // Obsługa przycisków nawigacyjnych
@@ -87,18 +118,22 @@ public class DebtDetailActivity extends AppCompatActivity {
         });
     }
 
-    // Metoda do usuwania długu z listy i zapisania zmian w pliku
     private void removeDebt() {
         for (int i = 0; i < debtList.size(); i++) {
             if (debtList.get(i).name.equals(currentDebtName)) {
-                debtList.remove(i); // Usuwamy dług z listy
-                saveDebtsToFile(); // Zapisujemy po usunięciu
+                debtList.remove(i);
+                saveDebtsToFile();
                 break;
             }
         }
+
+        // Czyścimy pola tekstowe
+        debtTitleView.setText("");
+        debtAmountView.setText("");
+        debtDescriptionView.setText("");
+        debtUserView.setText("");
     }
 
-    // Zapis długów do pliku
     private void saveDebtsToFile() {
         try (FileOutputStream fos = openFileOutput("debts.txt", MODE_PRIVATE);
              OutputStreamWriter writer = new OutputStreamWriter(fos)) {
@@ -108,19 +143,19 @@ public class DebtDetailActivity extends AppCompatActivity {
             }
         } catch (IOException e) {
             e.printStackTrace();
-            Toast.makeText(this, "Błąd zapisu do pliku", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Błąd zapisu do pliku: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
     }
 
-    // Metoda do ładowania długów z pliku (nowy format CSV)
     private void loadDebtsFromFile() {
-        debtList.clear(); // Czyścimy listę przed załadowaniem danych
+        debtList.clear();
         try (FileInputStream fis = openFileInput("debts.txt");
              BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"))) {
 
             String line;
             while ((line = reader.readLine()) != null) {
-                // Rozdzielamy dane na podstawie średnika
+                if (line.trim().isEmpty()) continue;
+
                 String[] parts = line.split(";");
                 if (parts.length == 4) {
                     String name = parts[0];
@@ -128,17 +163,54 @@ public class DebtDetailActivity extends AppCompatActivity {
                     String additionalInfo = parts[2];
                     String user = parts[3];
 
-                    // Tworzymy nowy obiekt długu i dodajemy go do listy
                     AddDebtActivity.Debt debt = new AddDebtActivity.Debt(name, amount, additionalInfo, user);
                     debtList.add(debt);
 
-                    // Logowanie dla debugowania
                     Log.d("DebtDetailActivity", "Załadowano dług: " + debt.name + " - " + debt.amount);
                 }
             }
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(this, "Błąd odczytu z pliku", Toast.LENGTH_SHORT).show();
+        } catch (NumberFormatException e) {
+            e.printStackTrace();
+            Toast.makeText(this, "Błąd formatu danych w pliku", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == 1 && resultCode == RESULT_OK && data != null) {
+            String updatedName = data.getStringExtra("updatedDebtName");
+            double updatedAmount = data.getDoubleExtra("updatedDebtAmount", -1);
+            String updatedInfo = data.getStringExtra("updatedDebtInfo");
+            String updatedUser = data.getStringExtra("updatedDebtUser");
+
+            if (updatedName == null || updatedInfo == null || updatedUser == null || updatedAmount < 0) {
+                Toast.makeText(this, "Nieprawidłowe dane zaktualizowanego długu", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            for (AddDebtActivity.Debt debt : debtList) {
+                if (debt.name.equals(currentDebtName)) {
+                    debt.name = updatedName;
+                    debt.amount = updatedAmount;
+                    debt.additionalInfo = updatedInfo;
+                    debt.user = updatedUser;
+                    break;
+                }
+            }
+
+            saveDebtsToFile();
+
+            debtTitleView.setText(updatedName);
+            debtAmountView.setText(String.valueOf(updatedAmount));
+            debtDescriptionView.setText(updatedInfo);
+            debtUserView.setText(updatedUser);
+
+            Toast.makeText(this, "Dług został zaktualizowany", Toast.LENGTH_SHORT).show();
         }
     }
 }

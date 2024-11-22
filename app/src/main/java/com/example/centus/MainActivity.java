@@ -24,11 +24,14 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<AddDebtActivity.Debt> debtList = new ArrayList<>();
     private LinearLayout debtsLayout;
     private TextView totalDebtTextView;
+    private View statusIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        statusIndicator = findViewById(R.id.statusIndicator);
+
 
         debtsLayout = findViewById(R.id.debtsLayout);
         totalDebtTextView = findViewById(R.id.totalDebtTextView);
@@ -123,6 +126,16 @@ public class MainActivity extends AppCompatActivity {
     private void updateTotalDebt() {
         double totalDebt = calculateTotalDebt();
         totalDebtTextView.setText("Bilans długu: " + totalDebt + " zł");
+
+        if (totalDebt > 0) {
+            statusIndicator.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
+            statusIndicator.setVisibility(View.VISIBLE); // Ustaw widoczność na widoczną
+        } else if (totalDebt < 0) {
+            statusIndicator.setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
+            statusIndicator.setVisibility(View.VISIBLE); // Ustaw widoczność na widoczną
+        } else {
+            statusIndicator.setVisibility(View.INVISIBLE); // Ukryj kwadracik
+        }
     }
 
     // Obliczanie sumy długów
