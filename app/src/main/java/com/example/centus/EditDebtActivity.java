@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -31,6 +32,43 @@ public class EditDebtActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_debt);
+
+        // Przyciski nawigacji
+        ImageButton notificationsButton = findViewById(R.id.notificationButton);
+        notificationsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EditDebtActivity.this, NotificationActivity.class);
+            startActivity(intent);
+        });
+
+        ImageButton mainButton = findViewById(R.id.appLogo);
+        mainButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EditDebtActivity.this, MainActivity.class);
+            startActivity(intent);
+        });
+
+        ImageButton debtsButton = findViewById(R.id.addingDebtsButton);
+        debtsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EditDebtActivity.this, AddDebtActivity.class);
+            startActivity(intent);
+        });
+
+        Button profileButton = findViewById(R.id.profileButton);
+        profileButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EditDebtActivity.this, MyProfileActivity.class);
+            startActivity(intent);
+        });
+
+        Button groupsButton = findViewById(R.id.groupsButton);
+        groupsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EditDebtActivity.this, MyGroupsActivity.class);
+            startActivity(intent);
+        });
+
+        Button settingsButton = findViewById(R.id.settingsButton);
+        settingsButton.setOnClickListener(v -> {
+            Intent intent = new Intent(EditDebtActivity.this, OptionsActivity.class);
+            startActivity(intent);
+        });
 
         // Pobierz dane długu z Intenta
         String debtName = getIntent().getStringExtra("debtName");
