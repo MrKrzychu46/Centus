@@ -24,11 +24,14 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<AddDebtActivity.Debt> debtList = new ArrayList<>();
     private LinearLayout debtsLayout;
     private TextView totalDebtTextView;
+    private View statusIndicator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        statusIndicator = findViewById(R.id.statusIndicator);
+
 
         debtsLayout = findViewById(R.id.debtsLayout);
         totalDebtTextView = findViewById(R.id.totalDebtTextView);
@@ -119,11 +122,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     // Aktualizacja sumy długów
     private void updateTotalDebt() {
         double totalDebt = calculateTotalDebt();
         totalDebtTextView.setText("Bilans długu: " + totalDebt + " zł");
+
+        if (totalDebt > 0) {
+            statusIndicator.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
+            statusIndicator.setVisibility(View.VISIBLE); // Ustaw widoczność na widoczną
+        } else if (totalDebt < 0) {
+            statusIndicator.setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
+            statusIndicator.setVisibility(View.VISIBLE); // Ustaw widoczność na widoczną
+        } else {
+            statusIndicator.setVisibility(View.INVISIBLE); // Ukryj kwadracik
+        }
     }
 
     // Obliczanie sumy długów
@@ -175,5 +187,18 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(this, "Błąd odczytu z pliku", Toast.LENGTH_SHORT).show();
         }
+    }
+
+
+
+
+
+    // Metoda wywoływana po powrocie do MainActivity
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadDebtsFromFile();  // Ponowne wczytywanie długów z pliku
+        displayDebts();       // Wyświetlanie długów po aktualizacji
+        updateTotalDebt();    // Ponowne wczytywanie sumy długów
     }
 }

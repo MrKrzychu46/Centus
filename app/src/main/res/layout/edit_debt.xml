@@ -71,11 +71,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editDebtTitle"
+        app:layout_constraintTop_toBottomOf="@+id/editDebtName"
         tools:ignore="MissingConstraints" />
 
     <EditText
-        android:id="@+id/editDebtTitle"
+        android:id="@+id/editDebtName"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -93,9 +93,9 @@
         app:layout_constraintTop_toBottomOf="@+id/appLogo" />
 
     <EditText
-        android:id="@+id/editDebtDescription"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:id="@+id/editDebtInfo"
+        android:layout_width="373dp"
+        android:layout_height="50dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
@@ -116,7 +116,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="88dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:backgroundTint="@color/button_background"
         android:text="Zapisz zmiany"
@@ -124,7 +124,22 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/editDebtDescription" />
+        app:layout_constraintTop_toBottomOf="@id/editDebtInfo" />
+
+    <Button
+        android:id="@+id/cancelEditButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/button_background"
+        android:text="Anuluj"
+        android:textColor="@color/text_light"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/saveDebtButton" />
 
     <LinearLayout
         android:id="@+id/bottomNav"
