@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,29 +11,33 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import androidx.room.Room;
+
+import com.example.centus.AppDatabase;
+import com.example.centus.Debt;
+
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import javax.mail.AuthenticationFailedException;
-import javax.mail.MessagingException;
 
 public class AddDebtActivity extends Activity {
 
     private ArrayList<String> userList = new ArrayList<>();
     private HashMap<String, String> userEmailMap = new HashMap<>(); // Mapowanie użytkowników na e-maile
-    private ArrayList<Debt> debtList = new ArrayList<>();
+    private AppDatabase db; // Obiekt bazy danych
     private Spinner userSpinner;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_debt);
+
+        // Inicjalizacja bazy danych
+        db = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "debt-database").build();
 
         // Przyciski nawigacji
         ImageButton notificationsButton = findViewById(R.id.notificationButton);
@@ -116,8 +119,12 @@ public class AddDebtActivity extends Activity {
                 }
 
                 Debt debt = new Debt(name, amount, additionalInfo, selectedUser);
-                debtList.add(debt);
-                saveDebtToFile(debt);
+
+                // Zapis długu do bazy danych
+                new Thread(() -> {
+                    db.debtDao().insert(debt);
+                    runOnUiThread(() -> Toast.makeText(this, "Dług został zapisany w bazie danych", Toast.LENGTH_SHORT).show());
+                }).start();
 
                 // Automatyczne wysyłanie e-maila
                 new Thread(() -> {
@@ -134,7 +141,6 @@ public class AddDebtActivity extends Activity {
                                 "Zespół Centus";
 
                         mailSender.sendEmail(selectedEmail, subject, messageBody);
-
                         runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "E-mail został pomyślnie wysłany do dłużnika.", Toast.LENGTH_SHORT).show());
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -172,17 +178,6 @@ public class AddDebtActivity extends Activity {
         });
     }
 
-    private void saveDebtToFile(Debt debt) {
-        try (FileOutputStream fos = openFileOutput("debts.txt", MODE_APPEND);
-             OutputStreamWriter writer = new OutputStreamWriter(fos, "UTF-8")) {
-            String debtData = debt.name + ";" + debt.amount + ";" + debt.additionalInfo + ";" + debt.user + "\n";
-            writer.write(debtData);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Błąd zapisu długu", Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private void loadUsersFromFile() {
         userList.clear();
         userEmailMap.clear();
@@ -207,20 +202,6 @@ public class AddDebtActivity extends Activity {
 
         if (userList.isEmpty()) {
             Toast.makeText(this, "Brak zapisanych użytkowników. Dodaj użytkowników, aby kontynuować.", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    public static class Debt {
-        String name;
-        double amount;
-        String additionalInfo;
-        String user;
-
-        public Debt(String name, double amount, String additionalInfo, String user) {
-            this.name = name;
-            this.amount = amount;
-            this.additionalInfo = additionalInfo;
-            this.user = user;
         }
     }
 }

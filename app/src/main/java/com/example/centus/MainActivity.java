@@ -10,18 +10,15 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
+
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<AddDebtActivity.Debt> debtList = new ArrayList<>();
+    private AppDatabase db;
     private LinearLayout debtsLayout;
     private TextView totalDebtTextView;
     private View statusIndicator;
@@ -30,16 +27,17 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        // Inicjalizacja bazy danych
+        db = Room.databaseBuilder(getApplicationContext(),
+                AppDatabase.class, "debt-database").build();
+
         statusIndicator = findViewById(R.id.statusIndicator);
-
-
         debtsLayout = findViewById(R.id.debtsLayout);
         totalDebtTextView = findViewById(R.id.totalDebtTextView);
 
-        // Wczytujemy długi z pliku przy starcie aplikacji
-        loadDebtsFromFile();
-        displayDebts();
-        updateTotalDebt();
+        // Wczytaj dane przy uruchomieniu
+        loadDebtsFromDatabase();
 
         // Przycisk do nawigacji
         ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
@@ -78,30 +76,32 @@ public class MainActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            String name = data.getStringExtra("debtName");
-            double amount = data.getDoubleExtra("debtAmount", 0.0);
-            String additionalInfo = data.getStringExtra("debtInfo");
-            String user = data.getStringExtra("debtUser");
-
-            // Dodajemy nowy dług do listy
-            debtList.add(new AddDebtActivity.Debt(name, amount, additionalInfo, user));
-            saveDebtsToFile(); // Zapisujemy dane do pliku
-            displayDebts();
-            updateTotalDebt();
+            loadDebtsFromDatabase(); // Ponowne załadowanie długów po dodaniu
         }
     }
 
-    // Wyświetlanie długów w widoku
-    private void displayDebts() {
-        debtsLayout.removeAllViews();
-        Log.d("MainActivity", "Rozpoczynam wyświetlanie długów. Liczba długów: " + debtList.size());
+    // Wczytanie długów z bazy danych Room
+    private void loadDebtsFromDatabase() {
+        new Thread(() -> {
+            List<Debt> debts = db.debtDao().getAllDebts();
+            runOnUiThread(() -> {
+                displayDebts(debts);
+                updateTotalDebt(debts);
+            });
+        }).start();
+    }
 
-        if (debtList.isEmpty()) {
+    // Wyświetlanie długów w widoku
+    private void displayDebts(List<Debt> debts) {
+        debtsLayout.removeAllViews();
+        Log.d("MainActivity", "Rozpoczynam wyświetlanie długów. Liczba długów: " + debts.size());
+
+        if (debts.isEmpty()) {
             Toast.makeText(MainActivity.this, "Brak długów", Toast.LENGTH_SHORT).show();
             Log.d("MainActivity", "Lista długów jest pusta");
         } else {
-            for (int i = 0; i < debtList.size(); i++) {
-                AddDebtActivity.Debt debt = debtList.get(i);
+            for (int i = 0; i < debts.size(); i++) {
+                Debt debt = debts.get(i);
                 Log.d("MainActivity", "Wyświetlam dług: " + debt.name + " - " + debt.amount);
 
                 Button debtButton = new Button(this);
@@ -110,10 +110,10 @@ public class MainActivity extends AppCompatActivity {
                 final int index = i;
                 debtButton.setOnClickListener(v -> {
                     Intent intent = new Intent(MainActivity.this, DebtDetailActivity.class);
-                    intent.putExtra("debtTitle", debtList.get(index).name);
-                    intent.putExtra("debtAmount", debtList.get(index).amount + " zł");
-                    intent.putExtra("debtDescription", debtList.get(index).additionalInfo);
-                    intent.putExtra("debtUser", debtList.get(index).user);
+                    intent.putExtra("debtTitle", debts.get(index).name);
+                    intent.putExtra("debtAmount", debts.get(index).amount + " zł");
+                    intent.putExtra("debtDescription", debts.get(index).additionalInfo);
+                    intent.putExtra("debtUser", debts.get(index).user);
                     startActivity(intent);
                 });
 
@@ -123,8 +123,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Aktualizacja sumy długów
-    private void updateTotalDebt() {
-        double totalDebt = calculateTotalDebt();
+    private void updateTotalDebt(List<Debt> debts) {
+        double totalDebt = calculateTotalDebt(debts);
         totalDebtTextView.setText("Bilans długu: " + totalDebt + " zł");
 
         if (totalDebt > 0) {
@@ -139,66 +139,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     // Obliczanie sumy długów
-    private double calculateTotalDebt() {
+    private double calculateTotalDebt(List<Debt> debts) {
         double total = 0.0;
-        for (AddDebtActivity.Debt debt : debtList) {
+        for (Debt debt : debts) {
             total += debt.amount;
         }
         return total;
     }
 
-    // Zapisywanie długów do pliku w formacie CSV
-    private void saveDebtsToFile() {
-        try (FileOutputStream fos = openFileOutput("debts.txt", MODE_PRIVATE)) {
-            StringBuilder data = new StringBuilder();
-
-            for (AddDebtActivity.Debt debt : debtList) {
-                data.append(debt.name).append(";")
-                        .append(debt.amount).append(";")
-                        .append(debt.additionalInfo).append(";")
-                        .append(debt.user).append("\n");
-            }
-
-            fos.write(data.toString().getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Błąd zapisu do pliku", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // Wczytywanie długów z pliku CSV
-    private void loadDebtsFromFile() {
-        debtList.clear();
-        try (FileInputStream fis = openFileInput("debts.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"))) {
-
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(";");
-                if (parts.length == 4) {
-                    String name = parts[0];
-                    double amount = Double.parseDouble(parts[1]);
-                    String additionalInfo = parts[2];
-                    String user = parts[3];
-                    debtList.add(new AddDebtActivity.Debt(name, amount, additionalInfo, user));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Błąd odczytu z pliku", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-
-
-
     // Metoda wywoływana po powrocie do MainActivity
     @Override
     protected void onResume() {
         super.onResume();
-        loadDebtsFromFile();  // Ponowne wczytywanie długów z pliku
-        displayDebts();       // Wyświetlanie długów po aktualizacji
-        updateTotalDebt();    // Ponowne wczytywanie sumy długów
+        loadDebtsFromDatabase(); // Ponowne wczytywanie długów z bazy danych
     }
 }
