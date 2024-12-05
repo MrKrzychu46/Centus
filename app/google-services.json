@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "514965250614",
+    "project_id": "centusapp-a2e4d",
+    "storage_bucket": "centusapp-a2e4d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:514965250614:android:db92cc9ea9e18433062e97",
+        "android_client_info": {
+          "package_name": "com.example.centus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC5-SzNA3jkytmdSkcoQYVVmUKuCf0YP8k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

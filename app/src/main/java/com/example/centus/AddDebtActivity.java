@@ -20,6 +20,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
+import com.example.centus.FirebaseHelper;
+
 
 import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
@@ -30,11 +32,16 @@ public class AddDebtActivity extends Activity {
     private HashMap<String, String> userEmailMap = new HashMap<>(); // Mapowanie użytkowników na e-maile
     private ArrayList<Debt> debtList = new ArrayList<>();
     private Spinner userSpinner;
+    private FirebaseHelper firebaseHelper;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_debt);
+        firebaseHelper = new FirebaseHelper();
+
+
 
         // Przyciski nawigacji
         ImageButton notificationsButton = findViewById(R.id.notificationButton);
@@ -115,14 +122,17 @@ public class AddDebtActivity extends Activity {
                     return;
                 }
 
+                // Tworzymy obiekt długu
+                String userId = "userId_placeholder";  // Na razie możesz wstawić placeholder. W przyszłości będzie to ID użytkownika zalogowanego
                 Debt debt = new Debt(name, amount, additionalInfo, selectedUser);
-                debtList.add(debt);
-                saveDebtToFile(debt);
 
-                // Automatyczne wysyłanie e-maila
+                // Dodajemy dług do Firestore
+                firebaseHelper.addDebt(name, amount, additionalInfo, userId);
+
+                // Automatyczne wysyłanie e-maila w osobnym wątku
                 new Thread(() -> {
                     try {
-                        MailSender mailSender = new MailSender("centuscentaury@gmail.com", "oduu ebfs tiie rdol");
+                        MailSender mailSender = new MailSender("centuscentaury@gmail.com", "jopl oohx sydl fpmk");
                         String subject = "Powiadomienie o nowym długu";
                         String messageBody = "Witaj,\n\n" +
                                 "Zostałeś dodany jako dłużnik w aplikacji Centus. Szczegóły dotyczące długu:\n\n" +
@@ -135,6 +145,7 @@ public class AddDebtActivity extends Activity {
 
                         mailSender.sendEmail(selectedEmail, subject, messageBody);
 
+                        // Wyświetl potwierdzenie wysyłki e-maila
                         runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "E-mail został pomyślnie wysłany do dłużnika.", Toast.LENGTH_SHORT).show());
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -142,7 +153,7 @@ public class AddDebtActivity extends Activity {
                     }
                 }).start();
 
-                // Kontynuacja działania aplikacji
+                // Kontynuacja działania aplikacji po dodaniu długu
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("debtName", name);
                 resultIntent.putExtra("debtAmount", amount);
@@ -150,6 +161,7 @@ public class AddDebtActivity extends Activity {
                 resultIntent.putExtra("debtUser", selectedUser);
                 setResult(Activity.RESULT_OK, resultIntent);
 
+                // Pokaż okno dialogowe z potwierdzeniem
                 new AlertDialog.Builder(AddDebtActivity.this)
                         .setTitle("Potwierdzenie")
                         .setMessage("Dług został dodany. Czy chcesz wrócić do ekranu głównego?")
@@ -157,12 +169,14 @@ public class AddDebtActivity extends Activity {
                             Intent intent = new Intent(AddDebtActivity.this, MainActivity.class);
                             startActivity(intent);
                             finish();
+                            runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Dodano dług.", Toast.LENGTH_SHORT).show());
                         })
                         .setNegativeButton("Nie", (dialog, which) -> {
                             nameEditText.setText("");
                             amountEditText.setText("");
                             infoEditText.setText("");
                             userSpinner.setSelection(0);
+                            runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Dodano dług.", Toast.LENGTH_SHORT).show());
                         })
                         .show();
 
@@ -170,6 +184,7 @@ public class AddDebtActivity extends Activity {
                 Toast.makeText(AddDebtActivity.this, "Nieprawidłowa kwota", Toast.LENGTH_SHORT).show();
             }
         });
+
     }
 
     private void saveDebtToFile(Debt debt) {
@@ -211,6 +226,7 @@ public class AddDebtActivity extends Activity {
     }
 
     public static class Debt {
+        String id; // Dodajemy pole `id` do identyfikacji długu
         String name;
         double amount;
         String additionalInfo;
@@ -222,5 +238,15 @@ public class AddDebtActivity extends Activity {
             this.additionalInfo = additionalInfo;
             this.user = user;
         }
+
+        // Getter i setter dla `id`
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
     }
+
 }
