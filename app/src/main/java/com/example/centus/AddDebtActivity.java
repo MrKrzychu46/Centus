@@ -2,14 +2,17 @@ package com.example.centus;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Spinner;
+import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -21,15 +24,12 @@ import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.mail.AuthenticationFailedException;
-import javax.mail.MessagingException;
-
 public class AddDebtActivity extends Activity {
 
     private ArrayList<String> userList = new ArrayList<>();
-    private HashMap<String, String> userEmailMap = new HashMap<>(); // Mapowanie użytkowników na e-maile
+    private HashMap<String, String> userEmailMap = new HashMap<>();
     private ArrayList<Debt> debtList = new ArrayList<>();
-    private Spinner userSpinner;
+    private String selectedUser = ""; // Zmienna do przechowywania wybranego użytkownika
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,26 +76,26 @@ public class AddDebtActivity extends Activity {
         // Ładowanie użytkowników z pliku
         loadUsersFromFile();
 
-        // Inicjalizacja spinnera
-        userSpinner = findViewById(R.id.userSpinner);
-        ArrayAdapter<String> userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, userList);
-        userAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        userSpinner.setAdapter(userAdapter);
-
         // Inicjalizacja pól i przycisków
         EditText nameEditText = findViewById(R.id.nameEditText);
         EditText amountEditText = findViewById(R.id.amountEditText);
         EditText infoEditText = findViewById(R.id.infoEditText);
         Button addDebtButton = findViewById(R.id.addDebtButton);
 
+        // Przygotowanie do wyboru użytkownika
+        Button selectUserButton = findViewById(R.id.selectUserButton);
+        TextView selectedUserTextView = findViewById(R.id.selectedUserTextView);
+
+        // Wyświetlenie dialogu do wyboru użytkownika
+        selectUserButton.setOnClickListener(v -> showUserDialog(selectedUserTextView));
+
         // Obsługa przycisku "Dodaj dług"
         addDebtButton.setOnClickListener(v -> {
             String name = nameEditText.getText().toString().trim();
             String amountText = amountEditText.getText().toString().trim();
             String additionalInfo = infoEditText.getText().toString().trim();
-            String selectedUser = (String) userSpinner.getSelectedItem();
 
-            if (name.isEmpty() || amountText.isEmpty() || selectedUser == null || selectedUser.isEmpty()) {
+            if (name.isEmpty() || amountText.isEmpty() || selectedUser.isEmpty()) {
                 Toast.makeText(AddDebtActivity.this, "Proszę wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -142,14 +142,6 @@ public class AddDebtActivity extends Activity {
                     }
                 }).start();
 
-                // Kontynuacja działania aplikacji
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("debtName", name);
-                resultIntent.putExtra("debtAmount", amount);
-                resultIntent.putExtra("debtInfo", additionalInfo);
-                resultIntent.putExtra("debtUser", selectedUser);
-                setResult(Activity.RESULT_OK, resultIntent);
-
                 new AlertDialog.Builder(AddDebtActivity.this)
                         .setTitle("Potwierdzenie")
                         .setMessage("Dług został dodany. Czy chcesz wrócić do ekranu głównego?")
@@ -162,7 +154,8 @@ public class AddDebtActivity extends Activity {
                             nameEditText.setText("");
                             amountEditText.setText("");
                             infoEditText.setText("");
-                            userSpinner.setSelection(0);
+                            selectedUser = "";
+                            selectedUserTextView.setText("Brak wybranego użytkownika");
                         })
                         .show();
 
@@ -170,6 +163,27 @@ public class AddDebtActivity extends Activity {
                 Toast.makeText(AddDebtActivity.this, "Nieprawidłowa kwota", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void showUserDialog(TextView selectedUserTextView) {
+        Dialog dialog = new Dialog(this);
+        dialog.setContentView(R.layout.dialog_user_list);
+
+        ListView userListView = dialog.findViewById(R.id.userListView);
+        Button closeDialogButton = dialog.findViewById(R.id.closeDialogButton);
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, userList);
+        userListView.setAdapter(adapter);
+
+        userListView.setOnItemClickListener((parent, view, position, id) -> {
+            selectedUser = userList.get(position);
+            selectedUserTextView.setText("Wybrano: " + selectedUser);
+            dialog.dismiss();
+        });
+
+        closeDialogButton.setOnClickListener(v -> dialog.dismiss());
+
+        dialog.show();
     }
 
     private void saveDebtToFile(Debt debt) {
