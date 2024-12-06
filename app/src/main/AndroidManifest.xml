@@ -55,6 +55,9 @@
             android:name=".Notification"
             android:exported="false" />
 
+        <activity android:name=".RegisterActivity" />
+        <activity android:name=".LoginActivity" />
+
         <activity
             android:name=".SplashActivity"
             android:exported="true">

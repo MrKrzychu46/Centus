@@ -12,7 +12,12 @@
           "package_name": "com.example.centus"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "514965250614-uqtrqmh8oc2b9ci72fa3s2mi3022q35b.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyC5-SzNA3jkytmdSkcoQYVVmUKuCf0YP8k"
@@ -20,7 +25,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "514965250614-uqtrqmh8oc2b9ci72fa3s2mi3022q35b.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }
