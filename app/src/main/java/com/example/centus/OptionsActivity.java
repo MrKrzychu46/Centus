@@ -1,14 +1,13 @@
 package com.example.centus;
 
 import android.app.Activity;
-import android.os.Bundle; //DODANE
-import androidx.appcompat.app.AppCompatActivity; //DODANE
-import android.content.Intent; //DODANE2
-import android.view.View; //DODANE2
-import android.widget.Button; //DODANE2
+import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
+import android.content.Intent;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
-
-import androidx.appcompat.app.AppCompatActivity; //DODANE2
+import com.google.firebase.auth.FirebaseAuth;
 
 public class OptionsActivity extends Activity {
 
@@ -16,9 +15,6 @@ public class OptionsActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_options);
-
-        //DODANE2
-
 
         ImageButton notificationsButton = findViewById(R.id.notificationButton);
         notificationsButton.setOnClickListener(new View.OnClickListener() {
@@ -48,7 +44,6 @@ public class OptionsActivity extends Activity {
         });
 
         Button groupsButton = findViewById(R.id.groupsButton);
-
         groupsButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -58,7 +53,6 @@ public class OptionsActivity extends Activity {
         });
 
         Button profileButton = findViewById(R.id.profileButton);
-
         profileButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -67,6 +61,17 @@ public class OptionsActivity extends Activity {
             }
         });
 
+        // Dodanie przycisku do wylogowania
+        Button logOutButton = findViewById(R.id.logoutButton);
+        logOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FirebaseAuth.getInstance().signOut();
+                Intent intent = new Intent(OptionsActivity.this, LoginActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                finish();
+            }
+        });
     }
-
 }
