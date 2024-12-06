@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 public class DebtDetailActivity extends AppCompatActivity {
 
@@ -83,13 +84,38 @@ public class DebtDetailActivity extends AppCompatActivity {
                         String debtName = documentSnapshot.getString("name");
                         double debtAmount = documentSnapshot.getDouble("amount");
                         String debtInfo = documentSnapshot.getString("additional_info");
-                        String debtUser = documentSnapshot.getString("user_id");
+                        String debtUserId = documentSnapshot.getString("user_id");
+
+                        // Pobierz imię i nazwisko użytkownika na podstawie user_id
+                        if (debtUserId != null) {
+                            FirebaseFirestore.getInstance().collection("users")
+                                    .whereEqualTo("uniqueId", debtUserId)
+                                    .get()
+                                    .addOnSuccessListener(querySnapshot -> {
+                                        if (!querySnapshot.isEmpty()) {
+                                            DocumentSnapshot userSnapshot = querySnapshot.getDocuments().get(0);
+                                            String userName = userSnapshot.getString("name");
+                                            String userSurname = userSnapshot.getString("surname");
+                                            String fullName = (userName != null && userSurname != null) ? userName + " " + userSurname : "Nieznany użytkownik";
+                                            debtUserView.setText(fullName);
+                                        } else {
+                                            debtUserView.setText("Nieznany użytkownik");
+                                        }
+                                    })
+                                    .addOnFailureListener(e -> {
+                                        Log.w("DebtDetailActivity", "Error loading user details", e);
+                                        debtUserView.setText("Błąd ładowania użytkownika");
+                                    });
+                        } else {
+                            debtUserView.setText("Nieznany użytkownik");
+                        }
 
                         // Ustawienie wartości tekstowych
                         debtAmountView.setText(String.valueOf(debtAmount));
                         debtTitleView.setText(debtName);
                         debtDescriptionView.setText(debtInfo);
-                        debtUserView.setText(debtUser);
+                    } else {
+                        Toast.makeText(this, "Nie znaleziono szczegółów długu", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
