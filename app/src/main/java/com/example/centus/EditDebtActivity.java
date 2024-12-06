@@ -1,101 +1,50 @@
 package com.example.centus;
 
-import android.content.Intent;
+import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class EditDebtActivity extends AppCompatActivity {
 
-    // Klasa Debt jako obiekt w tej aktywności (niezależny od AddDebtActivity)
-    public static class Debt {
-        public String name;
-        public double amount;
-        public String additionalInfo;
-        public String user;
+    private FirebaseHelper firebaseHelper;
+    private String debtId; // Unikalne ID długu w Firestore
 
-        public Debt(String name, double amount, String additionalInfo, String user) {
-            this.name = name;
-            this.amount = amount;
-            this.additionalInfo = additionalInfo;
-            this.user = user;
-        }
-    }
-
-    private Debt currentDebt;
+    private EditText nameEditText;
+    private EditText amountEditText;
+    private EditText infoEditText;
+    private Button saveButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.edit_debt);
 
-        // Przyciski nawigacji
-        ImageButton notificationsButton = findViewById(R.id.notificationButton);
-        notificationsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(EditDebtActivity.this, NotificationActivity.class);
-            startActivity(intent);
-        });
+        // Inicjalizacja FirebaseHelper
+        firebaseHelper = new FirebaseHelper();
 
-        ImageButton mainButton = findViewById(R.id.appLogo);
-        mainButton.setOnClickListener(v -> {
-            Intent intent = new Intent(EditDebtActivity.this, MainActivity.class);
-            startActivity(intent);
-        });
+        // Pobierz ID długu z Intentu (będzie potrzebne do edycji w Firestore)
+        debtId = getIntent().getStringExtra("debtId");
 
-        ImageButton debtsButton = findViewById(R.id.addingDebtsButton);
-        debtsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(EditDebtActivity.this, AddDebtActivity.class);
-            startActivity(intent);
-        });
+        // Inicjalizacja elementów UI
+        nameEditText = findViewById(R.id.editDebtName);
+        amountEditText = findViewById(R.id.editDebtAmount);
+        infoEditText = findViewById(R.id.editDebtInfo);
+        saveButton = findViewById(R.id.saveDebtButton);
 
-        Button profileButton = findViewById(R.id.profileButton);
-        profileButton.setOnClickListener(v -> {
-            Intent intent = new Intent(EditDebtActivity.this, MyProfileActivity.class);
-            startActivity(intent);
-        });
+        // Załaduj szczegóły długu z Firestore
+        loadDebtDetailsFromFirestore(debtId);
 
-        Button groupsButton = findViewById(R.id.groupsButton);
-        groupsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(EditDebtActivity.this, MyGroupsActivity.class);
-            startActivity(intent);
-        });
-
-        Button settingsButton = findViewById(R.id.settingsButton);
-        settingsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(EditDebtActivity.this, OptionsActivity.class);
-            startActivity(intent);
-        });
-
-        // Pobierz dane długu z Intenta
-        String debtName = getIntent().getStringExtra("debtName");
-        double debtAmount = getIntent().getDoubleExtra("debtAmount", 0);
-        String debtInfo = getIntent().getStringExtra("debtInfo");
-        String debtUser = getIntent().getStringExtra("debtUser");
-
-        if (debtName == null || debtUser == null) {
-            Toast.makeText(this, "Nieprawidłowe dane długu!", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        currentDebt = new Debt(debtName, debtAmount, debtInfo, debtUser);
-
-        // Inicjalizacja pól edycji
-        EditText nameEditText = findViewById(R.id.editDebtName);
-        EditText amountEditText = findViewById(R.id.editDebtAmount);
-        EditText infoEditText = findViewById(R.id.editDebtInfo);
-
-        // Ustaw dane w polach tekstowych
-        nameEditText.setText(debtName);
-        amountEditText.setText(String.valueOf(debtAmount));
-        infoEditText.setText(debtInfo);
-
-        // Obsługa przycisku zapisu
-        Button saveButton = findViewById(R.id.saveDebtButton);
+        // Obsługa przycisku zapisywania zmian
         saveButton.setOnClickListener(v -> {
             String newName = nameEditText.getText().toString().trim();
             String newAmountText = amountEditText.getText().toString().trim();
@@ -115,28 +64,35 @@ public class EditDebtActivity extends AppCompatActivity {
                     return;
                 }
 
-                // Zaktualizuj dane długu
-                currentDebt.name = newName;
-                currentDebt.amount = newAmount;
-                currentDebt.additionalInfo = newInfo;
+                // Aktualizacja długu w Firestore
+                firebaseHelper.updateDebt(debtId, newName, newAmount, newInfo, "currentUserPlaceholder");
+                Toast.makeText(EditDebtActivity.this, "Dług został zaktualizowany", Toast.LENGTH_SHORT).show();
+                finish(); // Zakończ aktywność po zaktualizowaniu długu
 
-                // Przygotuj Intent zaktualizowanych danych
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("updatedDebtName", newName);
-                resultIntent.putExtra("updatedDebtAmount", newAmount);
-                resultIntent.putExtra("updatedDebtInfo", newInfo);
-                resultIntent.putExtra("updatedDebtUser", currentDebt.user);
-
-                // Zwróć dane do aktywności, która wywołała edycję
-                setResult(RESULT_OK, resultIntent);
-                finish(); // Zakończ aktywność edycji
             } catch (NumberFormatException e) {
                 Toast.makeText(EditDebtActivity.this, "Nieprawidłowy format kwoty", Toast.LENGTH_SHORT).show();
             }
         });
+    }
 
-        // Obsługa przycisku anulowania
-        Button cancelButton = findViewById(R.id.cancelEditButton);
-        cancelButton.setOnClickListener(v -> finish());
+    private void loadDebtDetailsFromFirestore(String debtId) {
+        firebaseHelper.getDebts().document(debtId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String debtName = documentSnapshot.getString("name");
+                        double debtAmount = documentSnapshot.getDouble("amount");
+                        String debtInfo = documentSnapshot.getString("additional_info");
+
+                        // Inicjalizacja pól edycji z wartościami pobranymi z Firestore
+                        nameEditText.setText(debtName);
+                        amountEditText.setText(String.valueOf(debtAmount));
+                        infoEditText.setText(debtInfo);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.w("EditDebtActivity", "Error loading debt details", e);
+                    Toast.makeText(this, "Błąd ładowania szczegółów długu", Toast.LENGTH_SHORT).show();
+                });
     }
 }
