@@ -6,11 +6,15 @@ import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -209,7 +213,24 @@ public class AddDebtActivity extends Activity {
                         userUniqueIdMap.put(fullName, uniqueId);
                         userEmailMap.put(fullName, email);
                     }
-                    ArrayAdapter<String> userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, userList);
+                    ArrayAdapter<String> userAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, userList) {
+                        @Override
+                        public View getDropDownView(int position, View convertView, ViewGroup parent) {
+                            View view = super.getDropDownView(position, convertView, parent);
+                            TextView textView = (TextView) view;
+                            textView.setTextColor(getResources().getColor(android.R.color.white)); // Biały tekst
+                            return view;
+                        }
+
+                        @Override
+                        public View getView(int position, View convertView, ViewGroup parent) {
+                            View view = super.getView(position, convertView, parent);
+                            TextView textView = (TextView) view;
+                            textView.setTextColor(getResources().getColor(android.R.color.white)); // Biały tekst
+                            return view;
+                        }
+                    };
+
                     userAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
                     userSpinner.setAdapter(userAdapter);
                 }
