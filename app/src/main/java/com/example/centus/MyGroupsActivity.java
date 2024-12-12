@@ -5,8 +5,12 @@ import android.os.Bundle; //DODANE
 import androidx.appcompat.app.AppCompatActivity; //DODANE
 import android.content.Intent; //DODANE2
 import android.view.View; //DODANE2
+import android.widget.ArrayAdapter;
 import android.widget.Button; //DODANE2
 import android.widget.ImageButton;
+import android.widget.ListView;
+
+import java.util.ArrayList;
 
 public class MyGroupsActivity extends Activity {
 
@@ -64,6 +68,24 @@ public class MyGroupsActivity extends Activity {
                 startActivity(intent);
             }
         });
+        ListView groupsDebtsListView = findViewById(R.id.groupsDebtsListView);
+
+        // Przykładowa lista danych, które będą wyświetlane
+        ArrayList<String> groupDebts = new ArrayList<>();
+        groupDebts.add("Grupa 1 - Dług: 100 zł");
+        groupDebts.add("Grupa 2 - Dług: 200 zł");
+        groupDebts.add("Grupa 3 - Dług: 150 zł");
+
+        // Tworzymy adapter do ListView z niestandardowym układem
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this,
+                R.layout.list_item, // Używamy własnego układu
+                R.id.itemText,      // ID TextView w list_item.xml
+                groupDebts          // Lista danych
+        );
+
+        // Ustawiamy adapter dla ListView
+        groupsDebtsListView.setAdapter(adapter);
 
     }
 

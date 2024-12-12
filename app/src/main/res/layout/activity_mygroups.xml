@@ -71,7 +71,7 @@
         android:layout_width="376dp"
         android:layout_height="380dp"
         android:layout_margin="16dp"
-        android:divider="@color/accent_yellow"
+        android:divider="#FFFFFF"
         android:dividerHeight="1dp"
         android:padding="8dp"
         android:textColor="@color/text_light"
