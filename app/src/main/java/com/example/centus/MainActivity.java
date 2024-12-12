@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -49,6 +50,43 @@ public class MainActivity extends AppCompatActivity {
 
         debtsLayout = findViewById(R.id.debtsLayout);
         totalDebtTextView = findViewById(R.id.totalDebtTextView);
+
+        //Wyszukiwanie użytkowników za pomocą e-maila
+
+        Button searchUserButton = findViewById(R.id.searchUserButton);
+        EditText emailSearchEditText = findViewById(R.id.emailSearchEditText);
+
+        searchUserButton.setOnClickListener(v -> {
+            String email = emailSearchEditText.getText().toString().trim();
+            if (email.isEmpty()) {
+                Toast.makeText(MainActivity.this, "Proszę wpisać e-mail", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            firebaseHelper.searchUserByEmail(email).addOnSuccessListener(queryDocumentSnapshots -> {
+                if (queryDocumentSnapshots.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Nie znaleziono użytkownika z podanym e-mailem", Toast.LENGTH_SHORT).show();
+                } else {
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        String firstName = document.getString("first_name");
+                        String lastName = document.getString("last_name");
+                        String phone = document.getString("phone");
+
+                        // Wyświetl informacje o użytkowniku
+                        Toast.makeText(MainActivity.this,
+                                "Znaleziono użytkownika:\n" +
+                                        "Imię: " + firstName + "\n" +
+                                        "Nazwisko: " + lastName + "\n" +
+                                        "Telefon: " + phone + "\n",
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+            }).addOnFailureListener(e -> {
+                Toast.makeText(MainActivity.this, "Wystąpił błąd podczas wyszukiwania użytkownika", Toast.LENGTH_SHORT).show();
+                Log.e("MainActivity", "Error searching user by email", e);
+            });
+        });
+
 
         // Wczytujemy długi z Firestore przy starcie aplikacji
         // Usunięcie nadmiernego odświeżania długów

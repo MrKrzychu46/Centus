@@ -4,6 +4,10 @@ import android.util.Log;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.android.gms.tasks.Task;
+import com.google.firebase.firestore.QuerySnapshot;
+
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,6 +23,10 @@ public class FirebaseHelper {
         db = FirebaseFirestore.getInstance();
         usersCollection = db.collection("users");
         debtsCollection = db.collection("debts");
+    }
+    // Wyszukiwanie użytkownika po e-mailu
+    public Task<QuerySnapshot> searchUserByEmail(String email) {
+        return usersCollection.whereEqualTo("email", email).get();
     }
 
     // Dodanie użytkownika do Firestore
