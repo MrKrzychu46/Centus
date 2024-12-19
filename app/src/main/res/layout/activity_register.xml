@@ -5,6 +5,25 @@
     android:padding="32dp">
 
     <EditText
+        android:id="@+id/nameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Imię" />
+
+    <EditText
+        android:id="@+id/surnameEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nazwisko" />
+
+    <EditText
+        android:id="@+id/phoneEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Numer telefonu (opcjonalnie)"
+        android:inputType="phone" />
+
+    <EditText
         android:id="@+id/emailEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,19 +33,19 @@
         android:id="@+id/passwordEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Password"
+        android:hint="Hasło"
         android:inputType="textPassword" />
 
     <EditText
         android:id="@+id/confirmPasswordEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Confirm Password"
+        android:hint="Potwierdź hasło"
         android:inputType="textPassword" />
 
     <Button
         android:id="@+id/registerButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Register" />
+        android:text="Zarejestruj" />
 </LinearLayout>

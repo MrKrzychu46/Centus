@@ -1,5 +1,6 @@
 package com.example.centus;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -12,16 +13,17 @@ import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import androidx.annotation.NonNull;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+
 import java.util.ArrayList;
 import java.util.HashMap;
-import com.example.centus.FirebaseHelper;
-
 
 import javax.mail.AuthenticationFailedException;
 import javax.mail.MessagingException;
@@ -29,19 +31,17 @@ import javax.mail.MessagingException;
 public class AddDebtActivity extends Activity {
 
     private ArrayList<String> userList = new ArrayList<>();
-    private HashMap<String, String> userEmailMap = new HashMap<>(); // Mapowanie użytkowników na e-maile
+    private HashMap<String, String> userUniqueIdMap = new HashMap<>(); // Mapowanie użytkowników na unikalne ID
+    private HashMap<String, String> userEmailMap = new HashMap<>(); // Mapowanie użytkowników na adresy e-mail
     private ArrayList<Debt> debtList = new ArrayList<>();
     private Spinner userSpinner;
     private FirebaseHelper firebaseHelper;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.add_debt);
         firebaseHelper = new FirebaseHelper();
-
-
 
         // Przyciski nawigacji
         ImageButton notificationsButton = findViewById(R.id.notificationButton);
@@ -53,12 +53,6 @@ public class AddDebtActivity extends Activity {
         ImageButton mainButton = findViewById(R.id.appLogo);
         mainButton.setOnClickListener(v -> {
             Intent intent = new Intent(AddDebtActivity.this, MainActivity.class);
-            startActivity(intent);
-        });
-
-        Button addUsersButton = findViewById(R.id.addingUsersButton);
-        addUsersButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AddDebtActivity.this, AddUserActivity.class);
             startActivity(intent);
         });
 
@@ -80,14 +74,9 @@ public class AddDebtActivity extends Activity {
             startActivity(intent);
         });
 
-        // Ładowanie użytkowników z pliku
-        loadUsersFromFile();
-
         // Inicjalizacja spinnera
         userSpinner = findViewById(R.id.userSpinner);
-        ArrayAdapter<String> userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, userList);
-        userAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        userSpinner.setAdapter(userAdapter);
+        loadUsersFromFirestore(); // Pobieranie użytkowników z Firestore
 
         // Inicjalizacja pól i przycisków
         EditText nameEditText = findViewById(R.id.nameEditText);
@@ -107,9 +96,10 @@ public class AddDebtActivity extends Activity {
                 return;
             }
 
-            String selectedEmail = userEmailMap.get(selectedUser);
-            if (selectedEmail == null || selectedEmail.isEmpty()) {
-                Toast.makeText(AddDebtActivity.this, "Nie znaleziono adresu e-mail dla wybranego użytkownika", Toast.LENGTH_SHORT).show();
+            String userId = userUniqueIdMap.get(selectedUser);
+            String recipientEmail = userEmailMap.get(selectedUser);
+            if (userId == null || userId.isEmpty() || recipientEmail == null || recipientEmail.isEmpty()) {
+                Toast.makeText(AddDebtActivity.this, "Nie znaleziono unikalnego ID lub adresu e-mail dla wybranego użytkownika", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -123,7 +113,6 @@ public class AddDebtActivity extends Activity {
                 }
 
                 // Tworzymy obiekt długu
-                String userId = "userId_placeholder";  // Na razie możesz wstawić placeholder. W przyszłości będzie to ID użytkownika zalogowanego
                 Debt debt = new Debt(name, amount, additionalInfo, selectedUser);
 
                 // Dodajemy dług do Firestore
@@ -143,10 +132,17 @@ public class AddDebtActivity extends Activity {
                                 "Pozdrawiamy,\n" +
                                 "Zespół Centus";
 
-                        mailSender.sendEmail(selectedEmail, subject, messageBody);
+                        // Wysyłanie e-maila na adres e-mail użytkownika
+                        mailSender.sendEmail(recipientEmail, subject, messageBody);
 
                         // Wyświetl potwierdzenie wysyłki e-maila
                         runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "E-mail został pomyślnie wysłany do dłużnika.", Toast.LENGTH_SHORT).show());
+                    } catch (AuthenticationFailedException e) {
+                        Log.e("AddDebtActivity", "Błąd uwierzytelnienia podczas wysyłania e-maila", e);
+                        runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Błąd uwierzytelnienia podczas wysyłania e-maila.", Toast.LENGTH_SHORT).show());
+                    } catch (MessagingException e) {
+                        Log.e("AddDebtActivity", "Błąd podczas wysyłania e-maila", e);
+                        runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Błąd podczas wysyłania e-maila. Sprawdź połączenie z Internetem.", Toast.LENGTH_SHORT).show());
                     } catch (Exception e) {
                         e.printStackTrace();
                         runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Błąd podczas wysyłania e-maila.", Toast.LENGTH_SHORT).show());
@@ -187,42 +183,44 @@ public class AddDebtActivity extends Activity {
 
     }
 
-    private void saveDebtToFile(Debt debt) {
-        try (FileOutputStream fos = openFileOutput("debts.txt", MODE_APPEND);
-             OutputStreamWriter writer = new OutputStreamWriter(fos, "UTF-8")) {
-            String debtData = debt.name + ";" + debt.amount + ";" + debt.additionalInfo + ";" + debt.user + "\n";
-            writer.write(debtData);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Błąd zapisu długu", Toast.LENGTH_SHORT).show();
-        }
-    }
+    private void loadUsersFromFirestore() {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("users").get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                QuerySnapshot querySnapshot = task.getResult();
+                if (querySnapshot != null) {
+                    userList.clear();
+                    userUniqueIdMap.clear();
+                    userEmailMap.clear();
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        String email = document.getString("email");
+                        String name = document.getString("name");
+                        String surname = document.getString("surname");
+                        String uniqueId = document.getString("uniqueId");
 
-    private void loadUsersFromFile() {
-        userList.clear();
-        userEmailMap.clear();
-        try (FileInputStream fis = openFileInput("users.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"))) {
+                        // Sprawdzenie, czy wartości email, name, surname lub uniqueId nie są null
+                        if (email == null || name == null || surname == null || uniqueId == null) {
+                            Log.w("AddDebtActivity", "Niekompletne dane użytkownika");
+                            continue;
+                        }
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] userData = line.split(";");
-                if (userData.length == 4) {
-                    String fullName = userData[0] + " " + userData[1];
-                    String email = userData[3];
-                    userList.add(fullName);
-                    userEmailMap.put(fullName, email);
+                        String fullName = name + " " + surname;
+                        userList.add(fullName);
+                        userUniqueIdMap.put(fullName, uniqueId);
+                        userEmailMap.put(fullName, email);
+                    }
+                    ArrayAdapter<String> userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, userList);
+                    userAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    userSpinner.setAdapter(userAdapter);
                 }
+            } else {
+                FirebaseFirestoreException e = (FirebaseFirestoreException) task.getException();
+                if (e != null) {
+                    Log.w("AddDebtActivity", "Błąd ładowania użytkowników", e);
+                }
+                Toast.makeText(this, "Błąd ładowania użytkowników", Toast.LENGTH_SHORT).show();
             }
-
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Błąd odczytu użytkowników", Toast.LENGTH_SHORT).show();
-        }
-
-        if (userList.isEmpty()) {
-            Toast.makeText(this, "Brak zapisanych użytkowników. Dodaj użytkowników, aby kontynuować.", Toast.LENGTH_LONG).show();
-        }
+        });
     }
 
     public static class Debt {
@@ -248,5 +246,4 @@ public class AddDebtActivity extends Activity {
             this.id = id;
         }
     }
-
 }
