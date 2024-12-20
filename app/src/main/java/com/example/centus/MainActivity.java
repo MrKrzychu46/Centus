@@ -10,13 +10,11 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,6 +23,7 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout debtsLayout;
     private TextView totalDebtTextView;
     private View statusIndicator;
+    private FirebaseHelper firebaseHelper; // Added: FirebaseHelper instance for Firestore operations
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,14 +31,10 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         statusIndicator = findViewById(R.id.statusIndicator);
 
+        firebaseHelper = new FirebaseHelper();  // Added: Initialize FirebaseHelper
 
         debtsLayout = findViewById(R.id.debtsLayout);
         totalDebtTextView = findViewById(R.id.totalDebtTextView);
-
-        // Wczytujemy długi z pliku przy starcie aplikacji
-        loadDebtsFromFile();
-        displayDebts();
-        updateTotalDebt();
 
         // Przycisk do nawigacji
         ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
@@ -73,21 +68,13 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Obsługa powrotu z AddDebtActivity
+    // Obsługa powrotu z AddDebtActivity i DebtDetailActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            String name = data.getStringExtra("debtName");
-            double amount = data.getDoubleExtra("debtAmount", 0.0);
-            String additionalInfo = data.getStringExtra("debtInfo");
-            String user = data.getStringExtra("debtUser");
-
-            // Dodajemy nowy dług do listy
-            debtList.add(new AddDebtActivity.Debt(name, amount, additionalInfo, user));
-            saveDebtsToFile(); // Zapisujemy dane do pliku
-            displayDebts();
-            updateTotalDebt();
+            // Załaduj ponownie długi, aby uwzględnić wszelkie zmiany (dodanie, edycja lub usunięcie)
+            loadDebtsFromFirestore(); // Existing call
         }
     }
 
@@ -110,11 +97,8 @@ public class MainActivity extends AppCompatActivity {
                 final int index = i;
                 debtButton.setOnClickListener(v -> {
                     Intent intent = new Intent(MainActivity.this, DebtDetailActivity.class);
-                    intent.putExtra("debtTitle", debtList.get(index).name);
-                    intent.putExtra("debtAmount", debtList.get(index).amount + " zł");
-                    intent.putExtra("debtDescription", debtList.get(index).additionalInfo);
-                    intent.putExtra("debtUser", debtList.get(index).user);
-                    startActivity(intent);
+                    intent.putExtra("debtId", debtList.get(index).getId());
+                    startActivityForResult(intent, 1); // Oczekujemy wyniku z DebtDetailActivity
                 });
 
                 debtsLayout.addView(debtButton);
@@ -147,58 +131,49 @@ public class MainActivity extends AppCompatActivity {
         return total;
     }
 
-    // Zapisywanie długów do pliku w formacie CSV
-    private void saveDebtsToFile() {
-        try (FileOutputStream fos = openFileOutput("debts.txt", MODE_PRIVATE)) {
-            StringBuilder data = new StringBuilder();
-
-            for (AddDebtActivity.Debt debt : debtList) {
-                data.append(debt.name).append(";")
-                        .append(debt.amount).append(";")
-                        .append(debt.additionalInfo).append(";")
-                        .append(debt.user).append("\n");
-            }
-
-            fos.write(data.toString().getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Błąd zapisu do pliku", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    // Wczytywanie długów z pliku CSV
-    private void loadDebtsFromFile() {
+    // Wczytywanie długów z Firestore
+    private void loadDebtsFromFirestore() {
         debtList.clear();
-        try (FileInputStream fis = openFileInput("debts.txt");
-             BufferedReader reader = new BufferedReader(new InputStreamReader(fis, "UTF-8"))) {
+        debtsLayout.removeAllViews(); // Czyszczenie widoku, aby uniknąć duplikatów
+        firebaseHelper.getDebts().get() // Added: Using FirebaseHelper for Firestore access
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
+                        String id = document.getId();
+                        String name = document.getString("name");
+                        Double amount = document.getDouble("amount"); // Modified: Check for null-safe retrieval
+                        if (amount == null) amount = 0.0; // Added: Assign default value for null amounts
+                        String additionalInfo = document.getString("additional_info");
+                        String user = document.getString("user_id");
 
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(";");
-                if (parts.length == 4) {
-                    String name = parts[0];
-                    double amount = Double.parseDouble(parts[1]);
-                    String additionalInfo = parts[2];
-                    String user = parts[3];
-                    debtList.add(new AddDebtActivity.Debt(name, amount, additionalInfo, user));
-                }
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(this, "Błąd odczytu z pliku", Toast.LENGTH_SHORT).show();
-        }
+                        AddDebtActivity.Debt debt = new AddDebtActivity.Debt(name, amount, additionalInfo, user);
+                        debt.setId(id);  // Przypisanie ID do obiektu `Debt`
+                        if (!containsDebt(debt)) {
+                            debtList.add(debt);
+                        }
+                    }
+                    displayDebts(); // Existing: Display debts after loading
+                    updateTotalDebt(); // Existing: Update total debt balance
+                })
+                .addOnFailureListener(e -> {
+                    Log.w("MainActivity", "Error loading debts from Firestore", e);
+                    Toast.makeText(MainActivity.this, "Błąd ładowania długów", Toast.LENGTH_SHORT).show();
+                });
     }
-
-
-
-
 
     // Metoda wywoływana po powrocie do MainActivity
     @Override
     protected void onResume() {
         super.onResume();
-        loadDebtsFromFile();  // Ponowne wczytywanie długów z pliku
-        displayDebts();       // Wyświetlanie długów po aktualizacji
-        updateTotalDebt();    // Ponowne wczytywanie sumy długów
+        // Załaduj ponownie długi po powrocie do MainActivity, aby odświeżyć dane
+        loadDebtsFromFirestore(); // Existing call
+    }
+
+    private boolean containsDebt(AddDebtActivity.Debt newDebt) {
+        for (AddDebtActivity.Debt debt : debtList) {
+            if (debt.getId().equals(newDebt.getId())) {
+                return true;
+            }
+        }
+        return false;
     }
 }
