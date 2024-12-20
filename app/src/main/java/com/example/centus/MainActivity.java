@@ -10,12 +10,9 @@ import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -26,32 +23,18 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout debtsLayout;
     private TextView totalDebtTextView;
     private View statusIndicator;
-    private FirebaseHelper firebaseHelper;
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            // Użytkownik nie jest zalogowany, przekierowanie do LoginActivity
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        }
-    }
+    private FirebaseHelper firebaseHelper; // Added: FirebaseHelper instance for Firestore operations
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         statusIndicator = findViewById(R.id.statusIndicator);
-        firebaseHelper = new FirebaseHelper();  // Inicjalizacja FirebaseHelper
+
+        firebaseHelper = new FirebaseHelper();  // Added: Initialize FirebaseHelper
 
         debtsLayout = findViewById(R.id.debtsLayout);
         totalDebtTextView = findViewById(R.id.totalDebtTextView);
-
-        // Wczytujemy długi z Firestore przy starcie aplikacji
-        // Usunięcie nadmiernego odświeżania długów
 
         // Przycisk do nawigacji
         ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
@@ -91,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
             // Załaduj ponownie długi, aby uwzględnić wszelkie zmiany (dodanie, edycja lub usunięcie)
-            loadDebtsFromFirestore();
+            loadDebtsFromFirestore(); // Existing call
         }
     }
 
@@ -152,12 +135,13 @@ public class MainActivity extends AppCompatActivity {
     private void loadDebtsFromFirestore() {
         debtList.clear();
         debtsLayout.removeAllViews(); // Czyszczenie widoku, aby uniknąć duplikatów
-        firebaseHelper.getDebts().get()
+        firebaseHelper.getDebts().get() // Added: Using FirebaseHelper for Firestore access
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String id = document.getId();
                         String name = document.getString("name");
-                        double amount = document.getDouble("amount");
+                        Double amount = document.getDouble("amount"); // Modified: Check for null-safe retrieval
+                        if (amount == null) amount = 0.0; // Added: Assign default value for null amounts
                         String additionalInfo = document.getString("additional_info");
                         String user = document.getString("user_id");
 
@@ -167,8 +151,8 @@ public class MainActivity extends AppCompatActivity {
                             debtList.add(debt);
                         }
                     }
-                    displayDebts();
-                    updateTotalDebt();
+                    displayDebts(); // Existing: Display debts after loading
+                    updateTotalDebt(); // Existing: Update total debt balance
                 })
                 .addOnFailureListener(e -> {
                     Log.w("MainActivity", "Error loading debts from Firestore", e);
@@ -181,7 +165,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         // Załaduj ponownie długi po powrocie do MainActivity, aby odświeżyć dane
-        loadDebtsFromFirestore();
+        loadDebtsFromFirestore(); // Existing call
     }
 
     private boolean containsDebt(AddDebtActivity.Debt newDebt) {

@@ -4,8 +4,11 @@ import android.util.Log;
 
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FirebaseHelper {
@@ -22,12 +25,13 @@ public class FirebaseHelper {
     }
 
     // Dodanie użytkownika do Firestore
-    public void addUser(String firstName, String lastName, String phone, String email) {
+    public void addUser(String firstName, String lastName, String phone, String email, String uniqueId) {
         Map<String, Object> user = new HashMap<>();
         user.put("first_name", firstName);
         user.put("last_name", lastName);
         user.put("phone", phone);
         user.put("email", email);
+        user.put("uniqueId", uniqueId);
 
         usersCollection.add(user)
                 .addOnSuccessListener(documentReference -> Log.d(TAG, "User added with ID: " + documentReference.getId()))
@@ -77,5 +81,60 @@ public class FirebaseHelper {
                 .delete()
                 .addOnSuccessListener(aVoid -> Log.d(TAG, "Debt successfully deleted!"))
                 .addOnFailureListener(e -> Log.w(TAG, "Error deleting debt", e));
+    }
+
+    // Pobieranie i grupowanie długów według user_id
+    public void fetchGroupedDebts(OnDebtsGroupedListener listener) {
+        debtsCollection.get()
+                .addOnSuccessListener(querySnapshot -> {
+                    Map<String, List<Map<String, Object>>> groupedDebts = new HashMap<>();
+
+                    for (QueryDocumentSnapshot document : querySnapshot) {
+                        String userId = document.getString("user_id");
+                        if (userId != null) {
+                            groupedDebts.putIfAbsent(userId, new ArrayList<>());
+                            Map<String, Object> debtData = document.getData();
+                            debtData.put("debtId", document.getId()); // Dodajemy debtId
+                            groupedDebts.get(userId).add(debtData);
+                        }
+                    }
+
+                    Log.d(TAG, "Zgrupowane długi: " + groupedDebts);
+                    listener.onSuccess(groupedDebts);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Błąd podczas pobierania długów", e);
+                    listener.onFailure(e);
+                });
+    }
+
+    // Pobieranie danych użytkownika na podstawie uniqueId
+    public void fetchUserById(String uniqueId, OnUserFetchListener listener) {
+        usersCollection.whereEqualTo("uniqueId", uniqueId)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        Log.d(TAG, "Pobrano użytkownika o uniqueId: " + uniqueId + " -> " + querySnapshot.getDocuments().get(0).getData());
+                        listener.onSuccess(querySnapshot.getDocuments().get(0).getData());
+                    } else {
+                        Log.e(TAG, "Brak użytkownika o uniqueId: " + uniqueId);
+                        listener.onFailure(new Exception("User not found with uniqueId: " + uniqueId));
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Błąd podczas pobierania użytkownika o uniqueId: " + uniqueId, e);
+                    listener.onFailure(e);
+                });
+    }
+
+    // Interfejsy do obsługi wyników
+    public interface OnDebtsGroupedListener {
+        void onSuccess(Map<String, List<Map<String, Object>>> groupedDebts);
+        void onFailure(Exception e);
+    }
+
+    public interface OnUserFetchListener {
+        void onSuccess(Map<String, Object> userData);
+        void onFailure(Exception e);
     }
 }
