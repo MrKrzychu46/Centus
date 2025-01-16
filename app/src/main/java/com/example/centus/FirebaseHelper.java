@@ -2,9 +2,11 @@ package com.example.centus;
 
 import android.util.Log;
 
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +25,9 @@ public class FirebaseHelper {
         usersCollection = db.collection("users");
         debtsCollection = db.collection("debts");
     }
-
+    public Task<QuerySnapshot> searchUserByEmail(String email) {
+        return usersCollection.whereEqualTo("email", email).get();
+    }
     // Dodanie użytkownika do Firestore
     public void addUser(String firstName, String lastName, String phone, String email, String uniqueId) {
         Map<String, Object> user = new HashMap<>();

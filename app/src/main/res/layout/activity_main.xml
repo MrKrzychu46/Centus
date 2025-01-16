@@ -141,4 +141,38 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/appLogo" />
 
+    <LinearLayout
+        android:id="@+id/searchLayout"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginBottom="16dp">
+
+        <EditText
+            android:id="@+id/emailSearchEditText"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="@string/mail"
+            android:inputType="textEmailAddress"
+            android:backgroundTint="@color/text_light"
+            android:textColor="@color/text_light"
+            android:textColorHint="@color/text_light"
+            android:padding="12dp" />
+
+        <Button
+            android:id="@+id/searchUserButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/button_background"
+            android:text="@string/szukaj"
+            android:textColor="@color/text_light"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp" />
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

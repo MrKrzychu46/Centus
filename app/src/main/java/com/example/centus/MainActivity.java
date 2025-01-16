@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -13,9 +14,13 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,18 +28,65 @@ public class MainActivity extends AppCompatActivity {
     private LinearLayout debtsLayout;
     private TextView totalDebtTextView;
     private View statusIndicator;
-    private FirebaseHelper firebaseHelper; // Added: FirebaseHelper instance for Firestore operations
+    private FirebaseHelper firebaseHelper;
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) {
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         statusIndicator = findViewById(R.id.statusIndicator);
-
-        firebaseHelper = new FirebaseHelper();  // Added: Initialize FirebaseHelper
+        firebaseHelper = new FirebaseHelper();
 
         debtsLayout = findViewById(R.id.debtsLayout);
         totalDebtTextView = findViewById(R.id.totalDebtTextView);
+
+        // Wyszukiwanie użytkowników za pomocą e-maila
+        Button searchUserButton = findViewById(R.id.searchUserButton);
+        EditText emailSearchEditText = findViewById(R.id.emailSearchEditText);
+
+        searchUserButton.setOnClickListener(v -> {
+            String email = emailSearchEditText.getText().toString().trim();
+            if (email.isEmpty()) {
+                Toast.makeText(MainActivity.this, "Proszę wpisać e-mail", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            firebaseHelper.searchUserByEmail(email).addOnSuccessListener(queryDocumentSnapshots -> {
+                if (queryDocumentSnapshots.isEmpty()) {
+                    Toast.makeText(MainActivity.this, "Nie znaleziono użytkownika z podanym e-mailem", Toast.LENGTH_SHORT).show();
+                } else {
+                    for (DocumentSnapshot document : queryDocumentSnapshots) {
+                        Map<String, Object> data = document.getData();
+                        Log.d("MainActivity", "Data map: " + data); // Sprawdź, co zawiera mapa danych
+
+                        String firstName = (String) data.get("name");
+                        String lastName = (String) data.get("surname");
+                        String phone = (String) data.get("phone");
+
+                        Toast.makeText(MainActivity.this,
+                                "Znaleziono użytkownika:\n" +
+                                        "Imię: " + firstName + "\n" +
+                                        "Nazwisko: " + lastName + "\n" +
+                                        "Telefon: " + phone,
+                                Toast.LENGTH_LONG).show();
+                    }
+                }
+            }).addOnFailureListener(e -> {
+                Toast.makeText(MainActivity.this, "Wystąpił błąd podczas wyszukiwania użytkownika", Toast.LENGTH_SHORT).show();
+                Log.e("MainActivity", "Error searching user by email", e);
+            });
+        });
 
         // Przycisk do nawigacji
         ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
@@ -68,17 +120,14 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    // Obsługa powrotu z AddDebtActivity i DebtDetailActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == 1 && resultCode == Activity.RESULT_OK) {
-            // Załaduj ponownie długi, aby uwzględnić wszelkie zmiany (dodanie, edycja lub usunięcie)
-            loadDebtsFromFirestore(); // Existing call
+            loadDebtsFromFirestore();
         }
     }
 
-    // Wyświetlanie długów w widoku
     private void displayDebts() {
         debtsLayout.removeAllViews();
         Log.d("MainActivity", "Rozpoczynam wyświetlanie długów. Liczba długów: " + debtList.size());
@@ -98,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
                 debtButton.setOnClickListener(v -> {
                     Intent intent = new Intent(MainActivity.this, DebtDetailActivity.class);
                     intent.putExtra("debtId", debtList.get(index).getId());
-                    startActivityForResult(intent, 1); // Oczekujemy wyniku z DebtDetailActivity
+                    startActivityForResult(intent, 1);
                 });
 
                 debtsLayout.addView(debtButton);
@@ -106,23 +155,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // Aktualizacja sumy długów
     private void updateTotalDebt() {
         double totalDebt = calculateTotalDebt();
         totalDebtTextView.setText("Bilans długu: " + totalDebt + " zł");
 
         if (totalDebt > 0) {
             statusIndicator.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
-            statusIndicator.setVisibility(View.VISIBLE); // Ustaw widoczność na widoczną
+            statusIndicator.setVisibility(View.VISIBLE);
         } else if (totalDebt < 0) {
             statusIndicator.setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
-            statusIndicator.setVisibility(View.VISIBLE); // Ustaw widoczność na widoczną
+            statusIndicator.setVisibility(View.VISIBLE);
         } else {
-            statusIndicator.setVisibility(View.INVISIBLE); // Ukryj kwadracik
+            statusIndicator.setVisibility(View.INVISIBLE);
         }
     }
 
-    // Obliczanie sumy długów
     private double calculateTotalDebt() {
         double total = 0.0;
         for (AddDebtActivity.Debt debt : debtList) {
@@ -131,28 +178,28 @@ public class MainActivity extends AppCompatActivity {
         return total;
     }
 
-    // Wczytywanie długów z Firestore
     private void loadDebtsFromFirestore() {
         debtList.clear();
-        debtsLayout.removeAllViews(); // Czyszczenie widoku, aby uniknąć duplikatów
-        firebaseHelper.getDebts().get() // Added: Using FirebaseHelper for Firestore access
+        debtsLayout.removeAllViews();
+        firebaseHelper.getDebts().get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
                         String id = document.getId();
                         String name = document.getString("name");
-                        Double amount = document.getDouble("amount"); // Modified: Check for null-safe retrieval
-                        if (amount == null) amount = 0.0; // Added: Assign default value for null amounts
+                        Double amountValue = document.getDouble("amount");
+                        double amount = (amountValue != null) ? amountValue : 0.0;
+
                         String additionalInfo = document.getString("additional_info");
                         String user = document.getString("user_id");
 
                         AddDebtActivity.Debt debt = new AddDebtActivity.Debt(name, amount, additionalInfo, user);
-                        debt.setId(id);  // Przypisanie ID do obiektu `Debt`
+                        debt.setId(id);
                         if (!containsDebt(debt)) {
                             debtList.add(debt);
                         }
                     }
-                    displayDebts(); // Existing: Display debts after loading
-                    updateTotalDebt(); // Existing: Update total debt balance
+                    displayDebts();
+                    updateTotalDebt();
                 })
                 .addOnFailureListener(e -> {
                     Log.w("MainActivity", "Error loading debts from Firestore", e);
@@ -160,12 +207,10 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
-    // Metoda wywoływana po powrocie do MainActivity
     @Override
     protected void onResume() {
         super.onResume();
-        // Załaduj ponownie długi po powrocie do MainActivity, aby odświeżyć dane
-        loadDebtsFromFirestore(); // Existing call
+        loadDebtsFromFirestore();
     }
 
     private boolean containsDebt(AddDebtActivity.Debt newDebt) {
