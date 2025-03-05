@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.Toast;
+import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 
@@ -36,6 +37,7 @@ public class AddDebtActivity extends Activity {
     private ArrayList<Debt> debtList = new ArrayList<>();
     private Spinner userSpinner;
     private FirebaseHelper firebaseHelper;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

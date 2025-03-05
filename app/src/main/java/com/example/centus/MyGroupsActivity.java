@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class MyGroupsActivity extends AppCompatActivity {
 
@@ -96,7 +97,7 @@ public class MyGroupsActivity extends AppCompatActivity {
                 String debtName = (debt.get("name") != null) ? debt.get("name").toString() : "Nieznany dług";
                 String debtId = (debt.get("debtId") != null) ? debt.get("debtId").toString() : null;
 
-                if (debtId == null) {
+                if (Objects.isNull(debtId)) {
                     Log.e(TAG, "Dług bez ID: " + debtName);
                     continue;
                 }
