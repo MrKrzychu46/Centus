@@ -51,43 +51,6 @@ public class MainActivity extends AppCompatActivity {
         debtsLayout = findViewById(R.id.debtsLayout);
         totalDebtTextView = findViewById(R.id.totalDebtTextView);
 
-        // Wyszukiwanie użytkowników za pomocą e-maila
-        Button searchUserButton = findViewById(R.id.searchUserButton);
-        EditText emailSearchEditText = findViewById(R.id.emailSearchEditText);
-
-        searchUserButton.setOnClickListener(v -> {
-            String email = emailSearchEditText.getText().toString().trim();
-            if (email.isEmpty()) {
-                Toast.makeText(MainActivity.this, "Proszę wpisać e-mail", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            firebaseHelper.searchUserByEmail(email).addOnSuccessListener(queryDocumentSnapshots -> {
-                if (queryDocumentSnapshots.isEmpty()) {
-                    Toast.makeText(MainActivity.this, "Nie znaleziono użytkownika z podanym e-mailem", Toast.LENGTH_SHORT).show();
-                } else {
-                    for (DocumentSnapshot document : queryDocumentSnapshots) {
-                        Map<String, Object> data = document.getData();
-                        Log.d("MainActivity", "Data map: " + data); // Sprawdź, co zawiera mapa danych
-
-                        String firstName = (String) data.get("name");
-                        String lastName = (String) data.get("surname");
-                        String phone = (String) data.get("phone");
-
-                        Toast.makeText(MainActivity.this,
-                                "Znaleziono użytkownika:\n" +
-                                        "Imię: " + firstName + "\n" +
-                                        "Nazwisko: " + lastName + "\n" +
-                                        "Telefon: " + phone,
-                                Toast.LENGTH_LONG).show();
-                    }
-                }
-            }).addOnFailureListener(e -> {
-                Toast.makeText(MainActivity.this, "Wystąpił błąd podczas wyszukiwania użytkownika", Toast.LENGTH_SHORT).show();
-                Log.e("MainActivity", "Error searching user by email", e);
-            });
-        });
-
         // Przycisk do nawigacji
         ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
         addingDebtsButton.setOnClickListener(v -> {
@@ -181,31 +144,93 @@ public class MainActivity extends AppCompatActivity {
     private void loadDebtsFromFirestore() {
         debtList.clear();
         debtsLayout.removeAllViews();
+
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+        if (currentUser == null) return;
+
+        String currentUid = currentUser.getUid();
+
         firebaseHelper.getDebts().get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        String id = document.getId();
-                        String name = document.getString("name");
-                        Double amountValue = document.getDouble("amount");
+                .addOnSuccessListener(querySnapshot -> {
+                    ArrayList<AddDebtActivity.Debt> debtsAsCreditor = new ArrayList<>();
+                    ArrayList<AddDebtActivity.Debt> debtsAsDebtor = new ArrayList<>();
+
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        String id = doc.getId();
+                        String name = doc.getString("name");
+                        Double amountValue = doc.getDouble("amount");
                         double amount = (amountValue != null) ? amountValue : 0.0;
+                        String info = doc.getString("additional_info");
+                        String creditorId = doc.getString("creditor_id");
+                        String debtorId = doc.getString("debtor_id");
 
-                        String additionalInfo = document.getString("additional_info");
-                        String user = document.getString("user_id");
-
-                        AddDebtActivity.Debt debt = new AddDebtActivity.Debt(name, amount, additionalInfo, user);
+                        AddDebtActivity.Debt debt = new AddDebtActivity.Debt(name, amount, info, debtorId);
                         debt.setId(id);
-                        if (!containsDebt(debt)) {
-                            debtList.add(debt);
+
+                        if (creditorId != null && creditorId.equals(currentUid)) {
+                            debtsAsCreditor.add(debt);
+                        } else if (debtorId != null && debtorId.equals(currentUid)) {
+                            debtsAsDebtor.add(debt);
                         }
                     }
-                    displayDebts();
-                    updateTotalDebt();
+
+                    // Wyświetl długi jako dłużnik
+                    if (!debtsAsDebtor.isEmpty()) {
+                        TextView label = new TextView(this);
+                        label.setText("🟥 Twoje długi (jesteś dłużnikiem):");
+                        debtsLayout.addView(label);
+                        for (AddDebtActivity.Debt debt : debtsAsDebtor) {
+                            addDebtButtonToLayout(debt);
+                        }
+                    }
+
+                    // Wyświetl długi jako wierzyciel
+                    if (!debtsAsCreditor.isEmpty()) {
+                        TextView label = new TextView(this);
+                        label.setText("🟩 Twoi dłużnicy (Ty pożyczyłeś):");
+                        debtsLayout.addView(label);
+                        for (AddDebtActivity.Debt debt : debtsAsCreditor) {
+                            addDebtButtonToLayout(debt);
+                        }
+                    }
+
+                    updateTotalDebt(debtsAsDebtor, debtsAsCreditor);
                 })
                 .addOnFailureListener(e -> {
-                    Log.w("MainActivity", "Error loading debts from Firestore", e);
-                    Toast.makeText(MainActivity.this, "Błąd ładowania długów", Toast.LENGTH_SHORT).show();
+                    Log.w("MainActivity", "Błąd ładowania długów", e);
+                    Toast.makeText(this, "Błąd ładowania długów", Toast.LENGTH_SHORT).show();
                 });
     }
+
+    private void addDebtButtonToLayout(AddDebtActivity.Debt debt) {
+        Button button = new Button(this);
+        button.setText("Dług: " + debt.name + " - " + debt.amount + " zł");
+        button.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, DebtDetailActivity.class);
+            intent.putExtra("debtId", debt.getId());
+            startActivityForResult(intent, 1);
+        });
+        debtsLayout.addView(button);
+    }
+
+    private void updateTotalDebt(ArrayList<AddDebtActivity.Debt> debtorList, ArrayList<AddDebtActivity.Debt> creditorList) {
+        double total = 0.0;
+        for (AddDebtActivity.Debt d : creditorList) total += d.amount;
+        for (AddDebtActivity.Debt d : debtorList) total -= d.amount;
+
+        totalDebtTextView.setText("Bilans: " + total + " zł");
+        if (total > 0) {
+            statusIndicator.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
+            statusIndicator.setVisibility(View.VISIBLE);
+        } else if (total < 0) {
+            statusIndicator.setBackgroundColor(getResources().getColor(android.R.color.holo_red_light));
+            statusIndicator.setVisibility(View.VISIBLE);
+        } else {
+            statusIndicator.setVisibility(View.INVISIBLE);
+        }
+    }
+
+
 
     @Override
     protected void onResume() {

@@ -32,7 +32,7 @@ import javax.mail.MessagingException;
 public class AddDebtActivity extends Activity {
 
     private ArrayList<String> userList = new ArrayList<>();
-    private HashMap<String, String> userUniqueIdMap = new HashMap<>(); // Mapowanie użytkowników na unikalne ID
+    private HashMap<String, String> userIdMap = new HashMap<>(); // Mapowanie użytkowników na unikalne ID
     private HashMap<String, String> userEmailMap = new HashMap<>(); // Mapowanie użytkowników na adresy e-mail
     private ArrayList<Debt> debtList = new ArrayList<>();
     private Spinner userSpinner;
@@ -92,13 +92,14 @@ public class AddDebtActivity extends Activity {
             String amountText = amountEditText.getText().toString().trim();
             String additionalInfo = infoEditText.getText().toString().trim();
             String selectedUser = (String) userSpinner.getSelectedItem();
+            String creditorId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
             if (name.isEmpty() || amountText.isEmpty() || selectedUser == null || selectedUser.isEmpty()) {
                 Toast.makeText(AddDebtActivity.this, "Proszę wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            String userId = userUniqueIdMap.get(selectedUser);
+            String userId = userIdMap.get(selectedUser);
             String recipientEmail = userEmailMap.get(selectedUser);
             if (userId == null || userId.isEmpty() || recipientEmail == null || recipientEmail.isEmpty()) {
                 Toast.makeText(AddDebtActivity.this, "Nie znaleziono unikalnego ID lub adresu e-mail dla wybranego użytkownika", Toast.LENGTH_SHORT).show();
@@ -117,8 +118,8 @@ public class AddDebtActivity extends Activity {
                 // Tworzymy obiekt długu
                 Debt debt = new Debt(name, amount, additionalInfo, selectedUser);
 
-                // Dodajemy dług do Firestore
-                firebaseHelper.addDebt(name, amount, additionalInfo, userId);
+                firebaseHelper.addDebt(name, amount, additionalInfo, creditorId, userId); // userId to debtorId
+
 
                 // Automatyczne wysyłanie e-maila w osobnym wątku
                 new Thread(() -> {
@@ -192,23 +193,22 @@ public class AddDebtActivity extends Activity {
                 QuerySnapshot querySnapshot = task.getResult();
                 if (querySnapshot != null) {
                     userList.clear();
-                    userUniqueIdMap.clear();
+                    userIdMap.clear();
                     userEmailMap.clear();
                     for (QueryDocumentSnapshot document : querySnapshot) {
                         String email = document.getString("email");
                         String name = document.getString("name");
                         String surname = document.getString("surname");
-                        String uniqueId = document.getString("uniqueId");
+                        String uid = document.getId(); // <--- Używamy UID jako klucza
 
-                        // Sprawdzenie, czy wartości email, name, surname lub uniqueId nie są null
-                        if (email == null || name == null || surname == null || uniqueId == null) {
+                        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(name) || TextUtils.isEmpty(surname)) {
                             Log.w("AddDebtActivity", "Niekompletne dane użytkownika");
                             continue;
                         }
 
                         String fullName = name + " " + surname;
                         userList.add(fullName);
-                        userUniqueIdMap.put(fullName, uniqueId);
+                        userIdMap.put(fullName, uid); // <--- UID zamiast uniqueId
                         userEmailMap.put(fullName, email);
                     }
                     ArrayAdapter<String> userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, userList);
@@ -224,6 +224,8 @@ public class AddDebtActivity extends Activity {
             }
         });
     }
+
+
 
     public static class Debt {
         String id; // Dodajemy pole `id` do identyfikacji długu

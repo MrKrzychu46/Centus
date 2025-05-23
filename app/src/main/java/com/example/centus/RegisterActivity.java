@@ -101,16 +101,14 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void addUserToFirestore(FirebaseUser user, String name, String surname, String phone) {
-        String userId = user.getUid();
+        String userId = user.getUid(); // Używamy UID Firebase
         String email = user.getEmail();
-        String uniqueId = UUID.randomUUID().toString(); // Generowanie unikalnego ID
 
         if (email != null) {
             Map<String, Object> userMap = new HashMap<>();
             userMap.put("email", email);
             userMap.put("name", name);
             userMap.put("surname", surname);
-            userMap.put("uniqueId", uniqueId); // Dodanie unikalnego ID do dokumentu
             if (!phone.isEmpty()) {
                 userMap.put("phone", phone);
             }
@@ -120,6 +118,7 @@ public class RegisterActivity extends AppCompatActivity {
                     .addOnFailureListener(e -> Log.w(TAG, "Błąd podczas dodawania użytkownika do Firestore", e));
         }
     }
+
 
     private boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(CONNECTIVITY_SERVICE);

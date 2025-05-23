@@ -152,30 +152,61 @@
 
     <!-- Dolne menu nawigacyjne -->
 
+    <TextView
+        android:id="@+id/creditorName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Wierzyciel:"
+        app:layout_constraintTop_toBottomOf="@+id/debtUser"
+        tools:layout_editor_absoluteX="16dp" />
+
+    <TextView
+        android:id="@+id/debtorName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Dłużnik:"
+        app:layout_constraintTop_toBottomOf="@+id/creditorName"
+        tools:layout_editor_absoluteX="26dp" />
+
+
+    ///////////////////////////
+
+    <TextView
+        android:id="@+id/debtDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Data wystawienia: "
+        android:textColor="@color/text_light"
+        android:textSize="16sp"
+        app:layout_constraintTop_toBottomOf="@+id/debtorName"
+        tools:layout_editor_absoluteX="0dp" />
+
+    /////////////////////////////////////
+
     <Button
         android:id="@+id/editDebtButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="156dp"
-        android:layout_marginTop="28dp"
+        android:layout_marginStart="160dp"
+        android:layout_marginTop="32dp"
         android:backgroundTint="@color/button_background"
         android:text="Edytuj"
         android:textColor="@color/text_light"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/debtUser" />
-///////////////////////////
+        app:layout_constraintTop_toBottomOf="@+id/debtDate" />
+
     <Button
         android:id="@+id/deleteDebtButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="156dp"
+        android:layout_marginStart="160dp"
         android:layout_marginTop="16dp"
         android:backgroundTint="@color/button_background"
         android:text="Usuń"
         android:textColor="@color/text_light"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/editDebtButton" />
-/////////////////////////////////////
+
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
