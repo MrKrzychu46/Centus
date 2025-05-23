@@ -7,27 +7,30 @@
     android:background="@color/background_dark"
     tools:context=".OptionsActivity">
 
+    <!-- UpperNav -->
 
     <ImageButton
         android:id="@+id/notificationButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginStart="64dp"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="48dp"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:contentDescription="@string/notifications_icon"
         android:focusable="true"
         android:scaleType="centerInside"
         android:src="@drawable/ic_bell"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/appLogo"
         app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/appLogo"
         android:layout_width="100dp"
         android:layout_height="100dp"
+        android:layout_marginStart="128dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="126dp"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:contentDescription="@string/app_logo"
@@ -42,43 +45,33 @@
         android:id="@+id/addingDebtsButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginStart="316dp"
-        android:layout_marginTop="44dp"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="36dp"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:contentDescription="@string/addingDebts_icon"
         android:focusable="true"
         android:scaleType="centerInside"
         android:src="@drawable/ic_plus"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/appLogo"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <!-- Main -->
 
     <TextView
         android:id="@+id/optionsTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="172dp"
-        android:layout_marginTop="160dp"
+        android:layout_marginStart="128dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="128dp"
         android:text="@string/opcje"
         android:textColor="@color/text_light"
         android:textSize="24sp"
         android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:layout_marginTop="180dp"
-        android:orientation="vertical"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.218"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/optionsTitle">
-
-    </LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/appLogo" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -117,52 +110,48 @@
 
     </LinearLayout>
 
+    <!-- BottomNav -->
+
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="16dp"
-        android:gravity="center"
         android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <Button
             android:id="@+id/groupsButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/button_background"
+            style="@style/BottomNavStyle"
             android:text="Grupy"
+            android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            tools:ignore="HardcodedText" />
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/profileButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/button_background"
+            style="@style/BottomNavStyle"
             android:text="Profil"
+            android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            tools:ignore="HardcodedText" />
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/settingsButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:backgroundTint="@color/button_background"
+            style="@style/BottomNavStyle"
             android:text="Ustawienia"
+            android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            tools:ignore="HardcodedText" />
+            android:layout_weight="1" />
     </LinearLayout>
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_begin="20dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

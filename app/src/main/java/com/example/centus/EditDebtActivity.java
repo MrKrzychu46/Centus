@@ -1,5 +1,6 @@
 package com.example.centus;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
@@ -8,7 +9,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 public class EditDebtActivity extends AppCompatActivity {
 
@@ -32,6 +32,14 @@ public class EditDebtActivity extends AppCompatActivity {
         amountEditText = findViewById(R.id.editDebtAmount);
         infoEditText = findViewById(R.id.editDebtInfo);
         saveButton = findViewById(R.id.saveDebtButton);
+
+        // Nawigacja
+        findViewById(R.id.notificationButton).setOnClickListener(v -> startActivity(new Intent(this, NotificationActivity.class)));
+        findViewById(R.id.appLogo).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.addingDebtsButton).setOnClickListener(v -> startActivity(new Intent(this, AddDebtActivity.class)));
+        findViewById(R.id.profileButton).setOnClickListener(v -> startActivity(new Intent(this, MyProfileActivity.class)));
+        findViewById(R.id.groupsButton).setOnClickListener(v -> startActivity(new Intent(this, MyGroupsActivity.class)));
+        findViewById(R.id.settingsButton).setOnClickListener(v -> startActivity(new Intent(this, OptionsActivity.class)));
 
         loadDebtDetailsFromFirestore(debtId);
 

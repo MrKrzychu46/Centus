@@ -23,9 +23,6 @@
             android:name=".AddDebtActivity"
             android:exported="false" />
 
-        <activity
-            android:name=".AddUserActivity"
-            android:exported="false" />
 
         <activity
             android:name=".OptionsActivity"
@@ -49,10 +46,6 @@
 
         <activity
             android:name=".NotificationActivity"
-            android:exported="false" />
-
-        <activity
-            android:name=".Notification"
             android:exported="false" />
 
         <activity android:name=".RegisterActivity" />

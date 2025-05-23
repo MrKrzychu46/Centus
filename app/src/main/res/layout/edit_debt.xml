@@ -7,52 +7,74 @@
     android:background="@color/background_dark"
     tools:context=".EditDebtActivity">
 
+    <!-- UpperNav -->
+
     <ImageButton
         android:id="@+id/notificationButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginStart="64dp"
-        android:layout_marginTop="44dp"
-        android:contentDescription="@string/notifications_icon"
-        android:src="@drawable/ic_bell"
-        android:scaleType="centerInside"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="48dp"
         android:background="@android:color/transparent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:clickable="true"
-        android:focusable="true"/>
+        android:contentDescription="@string/notifications_icon"
+        android:focusable="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_bell"
+        app:layout_constraintEnd_toStartOf="@+id/appLogo"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/appLogo"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:contentDescription="@string/app_logo"
-        android:src="@drawable/ic_add"
-        android:scaleType="centerInside"
-        android:background="@android:color/transparent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="128dp"
         android:layout_marginTop="8dp"
+        android:layout_marginEnd="126dp"
+        android:background="@android:color/transparent"
         android:clickable="true"
-        android:focusable="true"/>
+        android:contentDescription="@string/app_logo"
+        android:focusable="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_add"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ImageButton
         android:id="@+id/addingDebtsButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginStart="316dp"
-        android:layout_marginTop="44dp"
-        android:contentDescription="@string/addingDebts_icon"
-        android:src="@drawable/ic_plus"
-        android:scaleType="centerInside"
+        android:layout_marginStart="48dp"
+        android:layout_marginTop="36dp"
         android:background="@android:color/transparent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:clickable="true"
-        android:focusable="true"/>
+        android:contentDescription="@string/addingDebts_icon"
+        android:focusable="true"
+        android:scaleType="centerInside"
+        android:src="@drawable/ic_plus"
+        app:layout_constraintStart_toEndOf="@+id/appLogo"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- missing dodany -->
+    <!-- Main -->
+
+    <EditText
+        android:id="@+id/editDebtName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:backgroundTint="@color/button_background"
+        android:hint="Tytuł długu"
+        android:inputType="text"
+        android:padding="16dp"
+        android:textColor="@color/text_light"
+        android:textColorHint="@color/text_light"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/appLogo" />
 
     <EditText
         android:id="@+id/editDebtAmount"
@@ -75,27 +97,9 @@
         tools:ignore="MissingConstraints" />
 
     <EditText
-        android:id="@+id/editDebtName"
+        android:id="@+id/editDebtInfo"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        android:backgroundTint="@color/button_background"
-        android:hint="Tytuł długu"
-        android:inputType="text"
-        android:padding="16dp"
-        android:textColor="@color/text_light"
-        android:textColorHint="@color/text_light"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/appLogo" />
-
-    <EditText
-        android:id="@+id/editDebtInfo"
-        android:layout_width="373dp"
-        android:layout_height="50dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="16dp"
@@ -141,6 +145,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/saveDebtButton" />
 
+    <!-- BottomNav -->
+
     <LinearLayout
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
@@ -150,35 +156,38 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         android:gravity="center"
-        android:layout_marginBottom="16dp">
+        android:layout_marginBottom="0dp">
 
         <Button
             android:id="@+id/groupsButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            style="@style/BottomNavStyle"
             android:text="Grupy"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <Button
             android:id="@+id/profileButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            style="@style/BottomNavStyle"
             android:text="Profil"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <Button
             android:id="@+id/settingsButton"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            style="@style/BottomNavStyle"
             android:text="Ustawienia"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
-    </LinearLayout>
+            android:layout_weight="1"/>
 
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

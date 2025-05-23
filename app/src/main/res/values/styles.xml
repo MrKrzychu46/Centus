@@ -1,6 +1,6 @@
 <resources>
         <style name="AppTheme" parent="Theme.MaterialComponents.DayNight.NoActionBar">
-                        <item name="android:windowFullscreen">true</item>
+                <item name="android:windowFullscreen">true</item>
                 <item name="colorPrimary">@color/accent_blue</item>
                 <item name="colorPrimaryVariant">@color/coin_color</item>
                 <item name="colorOnPrimary">@color/text_light</item>
@@ -9,16 +9,15 @@
 
         </style>
 
-        <style name="NavigationButtonStyle">
-                <item name="android:backgroundTint">@color/button_background</item>
+        <style name="BottomNavStyle">
                 <item name="android:tint">@color/button_tint</item>
-                <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
                 <item name="android:layout_width">56dp</item>
                 <item name="android:layout_height">56dp</item>
                 <item name="android:layout_margin">8dp</item>
                 <item name="android:elevation">4dp</item>
-                <item name="android:shape">oval</item>
+                <item name="android:textSize">10dp</item>
         </style>
+
 
         <style name="text">
                 <item name="android:textColor">@color/text_light</item>

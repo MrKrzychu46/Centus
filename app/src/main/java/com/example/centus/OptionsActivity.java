@@ -2,11 +2,11 @@ package com.example.centus;
 
 import android.app.Activity;
 import android.os.Bundle;
-import androidx.appcompat.app.AppCompatActivity;
 import android.content.Intent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
+
 import com.google.firebase.auth.FirebaseAuth;
 
 public class OptionsActivity extends Activity {

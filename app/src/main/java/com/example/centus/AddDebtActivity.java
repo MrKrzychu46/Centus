@@ -1,27 +1,21 @@
 package com.example.centus;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Spinner;
 import android.widget.Toast;
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.firestore.FirebaseFirestoreException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,13 +25,10 @@ import javax.mail.MessagingException;
 
 public class AddDebtActivity extends Activity {
 
-    private ArrayList<String> userList = new ArrayList<>();
-    private HashMap<String, String> userIdMap = new HashMap<>(); // Mapowanie użytkowników na unikalne ID
-    private HashMap<String, String> userEmailMap = new HashMap<>(); // Mapowanie użytkowników na adresy e-mail
-    private ArrayList<Debt> debtList = new ArrayList<>();
-    private Spinner userSpinner;
     private FirebaseHelper firebaseHelper;
-
+    private AutoCompleteTextView userPhoneInput;
+    private HashMap<String, String> phoneToUidMap = new HashMap<>();
+    private HashMap<String, String> phoneToEmailMap = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,194 +36,121 @@ public class AddDebtActivity extends Activity {
         setContentView(R.layout.add_debt);
         firebaseHelper = new FirebaseHelper();
 
-        // Przyciski nawigacji
-        ImageButton notificationsButton = findViewById(R.id.notificationButton);
-        notificationsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AddDebtActivity.this, NotificationActivity.class);
-            startActivity(intent);
-        });
+        userPhoneInput = findViewById(R.id.userPhoneInput);
+        loadUsersFromFirestore();
 
-        ImageButton mainButton = findViewById(R.id.appLogo);
-        mainButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AddDebtActivity.this, MainActivity.class);
-            startActivity(intent);
-        });
+        // Nawigacja
+        findViewById(R.id.notificationButton).setOnClickListener(v -> startActivity(new Intent(this, NotificationActivity.class)));
+        findViewById(R.id.appLogo).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.profileButton).setOnClickListener(v -> startActivity(new Intent(this, MyProfileActivity.class)));
+        findViewById(R.id.groupsButton).setOnClickListener(v -> startActivity(new Intent(this, MyGroupsActivity.class)));
+        findViewById(R.id.settingsButton).setOnClickListener(v -> startActivity(new Intent(this, OptionsActivity.class)));
 
-        Button profileButton = findViewById(R.id.profileButton);
-        profileButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AddDebtActivity.this, MyProfileActivity.class);
-            startActivity(intent);
-        });
-
-        Button groupsButton = findViewById(R.id.groupsButton);
-        groupsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AddDebtActivity.this, MyGroupsActivity.class);
-            startActivity(intent);
-        });
-
-        Button settingsButton = findViewById(R.id.settingsButton);
-        settingsButton.setOnClickListener(v -> {
-            Intent intent = new Intent(AddDebtActivity.this, OptionsActivity.class);
-            startActivity(intent);
-        });
-
-        // Inicjalizacja spinnera
-        userSpinner = findViewById(R.id.userSpinner);
-        loadUsersFromFirestore(); // Pobieranie użytkowników z Firestore
-
-        // Inicjalizacja pól i przycisków
         EditText nameEditText = findViewById(R.id.nameEditText);
         EditText amountEditText = findViewById(R.id.amountEditText);
         EditText infoEditText = findViewById(R.id.infoEditText);
         Button addDebtButton = findViewById(R.id.addDebtButton);
 
-        // Obsługa przycisku "Dodaj dług"
         addDebtButton.setOnClickListener(v -> {
             String name = nameEditText.getText().toString().trim();
             String amountText = amountEditText.getText().toString().trim();
             String additionalInfo = infoEditText.getText().toString().trim();
-            String selectedUser = (String) userSpinner.getSelectedItem();
+            String phone = userPhoneInput.getText().toString().trim();
             String creditorId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-            if (name.isEmpty() || amountText.isEmpty() || selectedUser == null || selectedUser.isEmpty()) {
-                Toast.makeText(AddDebtActivity.this, "Proszę wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
+            if (name.isEmpty() || amountText.isEmpty() || phone.isEmpty()) {
+                Toast.makeText(this, "Proszę wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            String userId = userIdMap.get(selectedUser);
-            String recipientEmail = userEmailMap.get(selectedUser);
-            if (userId == null || userId.isEmpty() || recipientEmail == null || recipientEmail.isEmpty()) {
-                Toast.makeText(AddDebtActivity.this, "Nie znaleziono unikalnego ID lub adresu e-mail dla wybranego użytkownika", Toast.LENGTH_SHORT).show();
+            String debtorId = phoneToUidMap.get(phone);
+            String recipientEmail = phoneToEmailMap.get(phone);
+
+            if (debtorId == null || recipientEmail == null) {
+                Toast.makeText(this, "Nie znaleziono użytkownika z tym numerem", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (debtorId.equals(creditorId)) {
+                Toast.makeText(this, "Nie możesz dodać siebie jako dłużnika", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             try {
-                String sanitizedAmountText = amountText.replaceAll("[^0-9.,]", "").replace(",", ".");
-                double amount = Double.parseDouble(sanitizedAmountText);
-
+                String sanitized = amountText.replaceAll("[^0-9.,]", "").replace(",", ".");
+                double amount = Double.parseDouble(sanitized);
                 if (amount <= 0 || amount > 1_000_000) {
-                    Toast.makeText(AddDebtActivity.this, "Kwota musi być dodatnia i nie większa niż 1,000,000", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Kwota musi być dodatnia i nie większa niż 1,000,000", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // Tworzymy obiekt długu
-                Debt debt = new Debt(name, amount, additionalInfo, selectedUser);
+                firebaseHelper.addDebt(name, amount, additionalInfo, creditorId, debtorId);
 
-                firebaseHelper.addDebt(name, amount, additionalInfo, creditorId, userId); // userId to debtorId
-
-
-                // Automatyczne wysyłanie e-maila w osobnym wątku
                 new Thread(() -> {
                     try {
                         MailSender mailSender = new MailSender("centuscentaury@gmail.com", "jopl oohx sydl fpmk");
-                        String subject = "Powiadomienie o nowym długu";
-                        String messageBody = "Witaj,\n\n" +
-                                "Zostałeś dodany jako dłużnik w aplikacji Centus. Szczegóły dotyczące długu:\n\n" +
-                                "Nazwa długu: " + name + "\n" +
-                                "Kwota: " + amount + " zł\n" +
-                                (additionalInfo.isEmpty() ? "" : "Dodatkowe informacje: " + additionalInfo + "\n\n") +
-                                "Prosimy o kontakt w celu rozliczenia.\n\n" +
-                                "Pozdrawiamy,\n" +
-                                "Zespół Centus";
+                        String subject = "Nowy dług w aplikacji Centus";
+                        String message = "Zostałeś dodany jako dłużnik.\n\n" +
+                                "Nazwa: " + name + "\nKwota: " + amount + " zł\n" +
+                                (additionalInfo.isEmpty() ? "" : "Info: " + additionalInfo + "\n") +
+                                "Skontaktuj się z wierzycielem.";
 
-                        // Wysyłanie e-maila na adres e-mail użytkownika
-                        mailSender.sendEmail(recipientEmail, subject, messageBody);
-
-                        // Wyświetl potwierdzenie wysyłki e-maila
-                        runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "E-mail został pomyślnie wysłany do dłużnika.", Toast.LENGTH_SHORT).show());
-                    } catch (AuthenticationFailedException e) {
-                        Log.e("AddDebtActivity", "Błąd uwierzytelnienia podczas wysyłania e-maila", e);
-                        runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Błąd uwierzytelnienia podczas wysyłania e-maila.", Toast.LENGTH_SHORT).show());
-                    } catch (MessagingException e) {
-                        Log.e("AddDebtActivity", "Błąd podczas wysyłania e-maila", e);
-                        runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Błąd podczas wysyłania e-maila. Sprawdź połączenie z Internetem.", Toast.LENGTH_SHORT).show());
+                        mailSender.sendEmail(recipientEmail, subject, message);
+                        runOnUiThread(() -> Toast.makeText(this, "E-mail został wysłany.", Toast.LENGTH_SHORT).show());
                     } catch (Exception e) {
                         e.printStackTrace();
-                        runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Błąd podczas wysyłania e-maila.", Toast.LENGTH_SHORT).show());
+                        runOnUiThread(() -> Toast.makeText(this, "Błąd przy wysyłaniu e-maila", Toast.LENGTH_SHORT).show());
                     }
                 }).start();
 
-                // Kontynuacja działania aplikacji po dodaniu długu
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("debtName", name);
-                resultIntent.putExtra("debtAmount", amount);
-                resultIntent.putExtra("debtInfo", additionalInfo);
-                resultIntent.putExtra("debtUser", selectedUser);
-                setResult(Activity.RESULT_OK, resultIntent);
-
-                // Pokaż okno dialogowe z potwierdzeniem
-                new AlertDialog.Builder(AddDebtActivity.this)
+                new AlertDialog.Builder(this)
                         .setTitle("Potwierdzenie")
-                        .setMessage("Dług został dodany. Czy chcesz wrócić do ekranu głównego?")
+                        .setMessage("Dług został dodany. Wrócić do ekranu głównego?")
                         .setPositiveButton("Tak", (dialog, which) -> {
-                            Intent intent = new Intent(AddDebtActivity.this, MainActivity.class);
-                            startActivity(intent);
+                            startActivity(new Intent(this, MainActivity.class));
                             finish();
-                            runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Dodano dług.", Toast.LENGTH_SHORT).show());
                         })
                         .setNegativeButton("Nie", (dialog, which) -> {
                             nameEditText.setText("");
                             amountEditText.setText("");
                             infoEditText.setText("");
-                            userSpinner.setSelection(0);
-                            runOnUiThread(() -> Toast.makeText(AddDebtActivity.this, "Dodano dług.", Toast.LENGTH_SHORT).show());
+                            userPhoneInput.setText("");
                         })
                         .show();
 
             } catch (NumberFormatException e) {
-                Toast.makeText(AddDebtActivity.this, "Nieprawidłowa kwota", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Nieprawidłowa kwota", Toast.LENGTH_SHORT).show();
             }
         });
-
     }
 
     private void loadUsersFromFirestore() {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        db.collection("users").get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                QuerySnapshot querySnapshot = task.getResult();
-                if (querySnapshot != null) {
-                    userList.clear();
-                    userIdMap.clear();
-                    userEmailMap.clear();
-                    for (QueryDocumentSnapshot document : querySnapshot) {
-                        String email = document.getString("email");
-                        String name = document.getString("name");
-                        String surname = document.getString("surname");
-                        String uid = document.getId(); // <--- Używamy UID jako klucza
+        String currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseFirestore.getInstance().collection("users")
+                .get()
+                .addOnSuccessListener(query -> {
+                    ArrayList<String> phoneList = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : query) {
+                        String uid = doc.getId();
+                        String phone = doc.getString("phone");
+                        String email = doc.getString("email");
 
-                        if (TextUtils.isEmpty(email) || TextUtils.isEmpty(name) || TextUtils.isEmpty(surname)) {
-                            Log.w("AddDebtActivity", "Niekompletne dane użytkownika");
-                            continue;
-                        }
+                        if (uid.equals(currentUid)) continue;
+                        if (TextUtils.isEmpty(phone) || TextUtils.isEmpty(email)) continue;
 
-                        String fullName = name + " " + surname;
-                        userList.add(fullName);
-                        userIdMap.put(fullName, uid); // <--- UID zamiast uniqueId
-                        userEmailMap.put(fullName, email);
+                        phoneToUidMap.put(phone, uid);
+                        phoneToEmailMap.put(phone, email);
+                        phoneList.add(phone);
                     }
-                    ArrayAdapter<String> userAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, userList);
-                    userAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-                    userSpinner.setAdapter(userAdapter);
-                }
-            } else {
-                FirebaseFirestoreException e = (FirebaseFirestoreException) task.getException();
-                if (e != null) {
-                    Log.w("AddDebtActivity", "Błąd ładowania użytkowników", e);
-                }
-                Toast.makeText(this, "Błąd ładowania użytkowników", Toast.LENGTH_SHORT).show();
-            }
-        });
+
+                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, phoneList);
+                    userPhoneInput.setAdapter(adapter);
+                });
     }
 
-
-
     public static class Debt {
-        String id; // Dodajemy pole `id` do identyfikacji długu
-        String name;
+        String id, name, additionalInfo, user;
         double amount;
-        String additionalInfo;
-        String user;
 
         public Debt(String name, double amount, String additionalInfo, String user) {
             this.name = name;
@@ -241,13 +159,7 @@ public class AddDebtActivity extends Activity {
             this.user = user;
         }
 
-        // Getter i setter dla `id`
-        public String getId() {
-            return id;
-        }
-
-        public void setId(String id) {
-            this.id = id;
-        }
+        public void setId(String id) { this.id = id; }
+        public String getId() { return id; }
     }
 }

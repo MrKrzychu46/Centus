@@ -22,8 +22,7 @@ public class DebtDetailActivity extends AppCompatActivity {
     private String debtId;
 
     private TextView debtTitleView, debtAmountView, debtDescriptionView;
-    private TextView creditorView, debtorView;
-    private TextView debtDateView;
+    private TextView creditorView, debtorView, debtorLabel, creditorLabel;
 
 
     @Override
@@ -38,8 +37,16 @@ public class DebtDetailActivity extends AppCompatActivity {
         debtAmountView = findViewById(R.id.debtAmount);
         debtDescriptionView = findViewById(R.id.debtDescription);
         creditorView = findViewById(R.id.creditorName);
+        creditorLabel = findViewById(R.id.creditorNameLabel);
         debtorView = findViewById(R.id.debtorName);
-        debtDateView = findViewById(R.id.debtDate);
+        debtorLabel = findViewById(R.id.debtUserLabel);
+
+        // Nawigacja
+        findViewById(R.id.addingDebtsButton).setOnClickListener(v -> startActivity(new Intent(this, AddDebtActivity.class)));
+        findViewById(R.id.notificationButton).setOnClickListener(v -> startActivity(new Intent(this, NotificationActivity.class)));
+        findViewById(R.id.profileButton).setOnClickListener(v -> startActivity(new Intent(this, MyProfileActivity.class)));
+        findViewById(R.id.groupsButton).setOnClickListener(v -> startActivity(new Intent(this, MyGroupsActivity.class)));
+        findViewById(R.id.settingsButton).setOnClickListener(v -> startActivity(new Intent(this, OptionsActivity.class)));
 
 
         loadDebtDetailsFromFirestore(debtId);
@@ -54,17 +61,12 @@ public class DebtDetailActivity extends AppCompatActivity {
         Button deleteDebtButton = findViewById(R.id.deleteDebtButton);
         deleteDebtButton.setOnClickListener(v -> deleteDebt());
 
-        ImageButton notificationsButton = findViewById(R.id.notificationButton);
-        notificationsButton.setOnClickListener(v -> startActivity(new Intent(this, NotificationActivity.class)));
 
         ImageButton mainButton = findViewById(R.id.appLogo);
         mainButton.setOnClickListener(v -> {
             setResult(Activity.RESULT_OK);
             finish();
         });
-
-        ImageButton addingDebtsButton = findViewById(R.id.addingDebtsButton);
-        addingDebtsButton.setOnClickListener(v -> startActivity(new Intent(this, AddDebtActivity.class)));
     }
 
     private void loadDebtDetailsFromFirestore(String debtId) {
@@ -91,9 +93,9 @@ public class DebtDetailActivity extends AppCompatActivity {
                     TextView debtDateView = findViewById(R.id.debtDate);
                     if (createdAt != null) {
                         String formattedDate = android.text.format.DateFormat.format("dd.MM.yyyy HH:mm", createdAt.toDate()).toString();
-                        debtDateView.setText("Data wystawienia: " + formattedDate);
+                        debtDateView.setText(formattedDate);
                     } else {
-                        debtDateView.setText("Data wystawienia: nieznana");
+                        debtDateView.setText("Brak");
                     }
 
                     // 🔐 Zabezpieczenie przycisków tylko dla wierzyciela
@@ -108,38 +110,47 @@ public class DebtDetailActivity extends AppCompatActivity {
                     deleteDebtButton.setVisibility(isCreditor ? View.VISIBLE : View.GONE);
 
                     // Dane wierzyciela
-                    if (creditorId != null) {
+                    if (creditorId != null && !creditorId.equals(currentUid)) {
                         firebaseHelper.fetchUserById(creditorId, new FirebaseHelper.OnUserFetchListener() {
                             @Override
                             public void onSuccess(Map<String, Object> userData) {
                                 String n = (String) userData.get("name");
                                 String s = (String) userData.get("surname");
-                                creditorView.setText("Wierzyciel: " + (n != null ? n : "") + " " + (s != null ? s : ""));
+                                String fullName = (n != null ? n : "") + " " + (s != null ? s : "");
+                                creditorView.setText(fullName.trim().isEmpty() ? "Brak" : fullName);
                             }
 
                             @Override
                             public void onFailure(Exception e) {
-                                creditorView.setText("Wierzyciel: nieznany");
+                                creditorView.setText("Brak");
                             }
                         });
+                    } else {
+                        creditorView.setVisibility(View.GONE); // ukryj pole, bo to Ty jesteś wierzycielem
+                        creditorLabel.setVisibility(View.GONE);
                     }
 
                     // Dane dłużnika
-                    if (debtorId != null) {
+                    if (debtorId != null && !debtorId.equals(currentUid)) {
                         firebaseHelper.fetchUserById(debtorId, new FirebaseHelper.OnUserFetchListener() {
                             @Override
                             public void onSuccess(Map<String, Object> userData) {
                                 String n = (String) userData.get("name");
                                 String s = (String) userData.get("surname");
-                                debtorView.setText("Dłużnik: " + (n != null ? n : "") + " " + (s != null ? s : ""));
+                                String fullName = (n != null ? n : "") + " " + (s != null ? s : "");
+                                debtorView.setText(fullName.trim().isEmpty() ? "Brak" : fullName);
                             }
 
                             @Override
                             public void onFailure(Exception e) {
-                                debtorView.setText("Dłużnik: nieznany");
+                                debtorView.setText("Brak");
                             }
                         });
+                    } else {
+                        debtorView.setVisibility(View.GONE);
+                        debtorLabel.setVisibility(View.GONE);
                     }
+
                 })
                 .addOnFailureListener(e -> {
                     Log.w("DebtDetailActivity", "Błąd ładowania długu", e);
