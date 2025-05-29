@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,19 +15,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class MyGroupsActivity extends AppCompatActivity {
 
     private LinearLayout groupsLayout;
+    private Button createGroupButton, addGroupExpenseButton;
     private FirebaseFirestore db;
-    private FirebaseHelper firebaseHelper;
     private String currentUid;
-
-    private static final String TAG = "MyGroupsActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,103 +28,65 @@ public class MyGroupsActivity extends AppCompatActivity {
         setContentView(R.layout.activity_mygroups);
 
         db = FirebaseFirestore.getInstance();
-        firebaseHelper = new FirebaseHelper();
-        groupsLayout = findViewById(R.id.groupsLayout);
         currentUid = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        // Nawigacja
-        findViewById(R.id.notificationButton).setOnClickListener(v -> startActivity(new Intent(this, NotificationActivity.class)));
-        findViewById(R.id.appLogo).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        groupsLayout = findViewById(R.id.groupsLayout);
+        createGroupButton = findViewById(R.id.createGroupButton);
+
         findViewById(R.id.addingDebtsButton).setOnClickListener(v -> startActivity(new Intent(this, AddDebtActivity.class)));
+        findViewById(R.id.appLogo).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
+        findViewById(R.id.notificationButton).setOnClickListener(v -> startActivity(new Intent(this, NotificationActivity.class)));
         findViewById(R.id.profileButton).setOnClickListener(v -> startActivity(new Intent(this, MyProfileActivity.class)));
+        findViewById(R.id.groupsButton).setOnClickListener(v -> startActivity(new Intent(this, MyGroupsActivity.class)));
         findViewById(R.id.settingsButton).setOnClickListener(v -> startActivity(new Intent(this, OptionsActivity.class)));
 
-        fetchAndDisplayDebtors();
+        createGroupButton.setOnClickListener(v -> {
+            Intent intent = new Intent(this, CreateGroupActivity.class);
+            startActivity(intent);
+        });
+
+        loadUserGroups();
     }
 
-    private void fetchAndDisplayDebtors() {
-        db.collection("debts")
-                .whereEqualTo("creditor_id", currentUid)
+    private void loadUserGroups() {
+        db.collection("groups")
+                .whereArrayContains("members", currentUid)
                 .get()
                 .addOnSuccessListener(query -> {
-                    Map<String, List<Map<String, Object>>> groupedDebts = new HashMap<>();
+                    groupsLayout.removeAllViews();
 
-                    for (QueryDocumentSnapshot doc : query) {
-                        String debtorId = doc.getString("debtor_id");
-                        if (debtorId == null) continue;
-
-                        groupedDebts.putIfAbsent(debtorId, new ArrayList<>());
-                        Map<String, Object> debt = doc.getData();
-                        debt.put("debtId", doc.getId());
-                        groupedDebts.get(debtorId).add(debt);
+                    if (query.isEmpty()) {
+                        TextView info = new TextView(this);
+                        info.setText("Nie należysz do żadnej grupy.");
+                        info.setTextColor(getResources().getColor(android.R.color.white));
+                        groupsLayout.addView(info);
+                        return;
                     }
 
-                    if (groupedDebts.isEmpty()) {
-                        Toast.makeText(this, "Nie masz jeszcze żadnych dłużników.", Toast.LENGTH_SHORT).show();
-                    } else {
-                        displayGroups(groupedDebts);
+                    for (QueryDocumentSnapshot doc : query) {
+                        String groupId = doc.getId();
+                        String groupName = doc.getString("name");
+
+                        Button groupBtn = new Button(this);
+                        groupBtn.setText("Grupa: " + groupName);
+                        groupBtn.setOnClickListener(v -> {
+                            Intent intent = new Intent(this, GroupDetailsActivity.class);
+                            intent.putExtra("groupId", groupId);
+                            intent.putExtra("groupName", groupName);
+                            startActivity(intent);
+                        });
+                        groupsLayout.addView(groupBtn);
                     }
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Błąd podczas pobierania długów", Toast.LENGTH_SHORT).show();
-                    Log.e(TAG, "Błąd podczas pobierania danych", e);
+                    Toast.makeText(this, "Błąd wczytywania grup", Toast.LENGTH_SHORT).show();
+                    Log.e("MyGroupsActivity", "Błąd Firestore", e);
                 });
     }
 
-    private void displayGroups(Map<String, List<Map<String, Object>>> groupedDebts) {
-        groupsLayout.removeAllViews();
-
-        TextView title = new TextView(this);
-        title.setText("🧑‍🤝‍🧑 Twoi dłużnicy:");
-        title.setTextSize(18);
-        groupsLayout.addView(title);
-
-        for (String debtorId : groupedDebts.keySet()) {
-            List<Map<String, Object>> debts = groupedDebts.get(debtorId);
-
-            firebaseHelper.fetchUserById(debtorId, new FirebaseHelper.OnUserFetchListener() {
-                @Override
-                public void onSuccess(Map<String, Object> userData) {
-                    String name = (String) userData.get("name");
-                    String surname = (String) userData.get("surname");
-                    String fullName = (name != null ? name : "") + " " + (surname != null ? surname : "");
-
-                    double total = 0.0;
-                    for (Map<String, Object> d : debts) {
-                        Object amt = d.get("amount");
-                        if (amt instanceof Number) total += ((Number) amt).doubleValue();
-                    }
-
-                    Button groupButton = new Button(MyGroupsActivity.this);
-                    groupButton.setText(fullName + " – " + debts.size() + " dług(i) – razem: " + total + " zł");
-                    groupButton.setOnClickListener(v -> displayDebtsForGroup(fullName, debts));
-                    groupsLayout.addView(groupButton);
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    Log.e(TAG, "Błąd przy pobieraniu użytkownika", e);
-                }
-            });
-        }
-    }
-
-
-    private void displayDebtsForGroup(String userName, List<Map<String, Object>> debts) {
-        groupsLayout.removeAllViews();
-
-        for (Map<String, Object> debt : debts) {
-            String name = (String) debt.get("name");
-            String debtId = (String) debt.get("debtId");
-
-            Button debtButton = new Button(this);
-            debtButton.setText(name != null ? name : "Dług");
-            debtButton.setOnClickListener(v -> {
-                Intent intent = new Intent(MyGroupsActivity.this, DebtDetailActivity.class);
-                intent.putExtra("debtId", debtId);
-                startActivity(intent);
-            });
-            groupsLayout.addView(debtButton);
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadUserGroups();
     }
 }

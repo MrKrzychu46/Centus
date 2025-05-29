@@ -56,7 +56,7 @@
     <!-- Główna zawartość -->
 
     <LinearLayout
-        android:id="@+id/mainGroupsLayout"
+        android:id="@+id/manageMembersContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
@@ -65,28 +65,57 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/createGroupButton"
+        <TextView
+            android:id="@+id/manageMembersTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="➕ Utwórz nową grupę"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:text="Zarządzaj członkami grupy"
             android:textColor="@color/text_light"
-            android:backgroundTint="@color/button_background" />
+            android:textSize="20dp"
+            android:layout_marginTop="16dp"
+            android:paddingBottom="12dp" />
 
-        <ScrollView
+        <EditText
+            android:id="@+id/phoneInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Numer telefonu użytkownika"
+            android:textColorHint="@color/text_light"
+            android:textColor="@color/text_light"
+            android:backgroundTint="@color/button_background"
+            android:padding="12dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:inputType="phone" />
+
+        <Button
+            android:id="@+id/addPhoneButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Dodaj użytkownika"
+            android:textColor="@color/text_light"
+            android:backgroundTint="@color/button_background"
+            android:layout_marginBottom="16dp"
+            android:padding="12dp" />
+
+        <ListView
+            android:id="@+id/userListView"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1">
+            android:layout_weight="1"
+            android:dividerHeight="1dp"
+            android:listSelector="@android:color/holo_blue_light"
+            android:backgroundTint="@color/button_background" />
 
-            <LinearLayout
-                android:id="@+id/groupsLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="16dp" />
-        </ScrollView>
+        <Button
+            android:id="@+id/saveMembersButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Zapisz zmiany"
+            android:textColor="@color/text_light"
+            android:backgroundTint="@color/button_background"
+            android:layout_marginTop="12dp"
+            android:padding="12dp" />
     </LinearLayout>
 
     <!-- BottomNav -->

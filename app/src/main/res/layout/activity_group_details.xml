@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp"
+    android:padding="16dp"
     android:background="@color/background_dark">
 
     <!-- UpperNav -->
@@ -12,8 +12,8 @@
         android:id="@+id/notificationButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="24dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="48dp"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:contentDescription="@string/notifications_icon"
@@ -25,8 +25,8 @@
 
     <ImageButton
         android:id="@+id/appLogo"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
         android:layout_marginTop="8dp"
         android:background="@android:color/transparent"
         android:clickable="true"
@@ -42,8 +42,8 @@
         android:id="@+id/addingDebtsButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="24dp"
+        android:layout_marginTop="36dp"
+        android:layout_marginStart="48dp"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:contentDescription="@string/addingDebts_icon"
@@ -54,9 +54,8 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- Główna zawartość -->
-
     <LinearLayout
-        android:id="@+id/mainGroupsLayout"
+        android:id="@+id/mainContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
@@ -65,27 +64,83 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/createGroupButton"
+        <TextView
+            android:id="@+id/groupTitleText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="➕ Utwórz nową grupę"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:text="Grupa: "
             android:textColor="@color/text_light"
-            android:backgroundTint="@color/button_background" />
+            android:textSize="20dp"
+            android:layout_marginTop="16dp"
+            android:paddingBottom="8dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <Button
+                android:id="@+id/editGroupNameButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="55dp"
+                android:text="Edytuj nazwę"
+                android:textColor="@color/text_light"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/button_background" />
+
+            <Button
+                android:id="@+id/manageMembersButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="55dp"
+                android:text="Zarządzaj członkami"
+                android:textColor="@color/text_light"
+                android:backgroundTint="@color/button_background"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="8dp" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/addGroupExpenseButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="➕ Dodaj wydatek"
+            android:textColor="@color/text_light"
+            android:backgroundTint="@color/button_background"
+            android:layout_marginBottom="8dp" />
+
+        <Button
+            android:id="@+id/deleteGroupButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="🗑️ Usuń grupę"
+            android:textColor="@color/text_light"
+            android:backgroundTint="@color/button_background"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/groupDebtsTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Wydatki:"
+            android:textColor="@color/text_light"
+            android:textSize="20dp"
+            android:layout_marginTop="8dp"
+            android:paddingBottom="8dp" />
 
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
+            android:layout_marginTop="8dp"
             android:layout_weight="1">
 
             <LinearLayout
-                android:id="@+id/groupsLayout"
+                android:id="@+id/expensesLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="16dp" />
+                android:orientation="vertical" />
         </ScrollView>
     </LinearLayout>
 
@@ -96,10 +151,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintEnd_toEndOf="parent"
+        android:gravity="center">
 
         <Button
             android:id="@+id/groupsButton"
@@ -109,7 +164,7 @@
             android:text="Grupy"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <Button
             android:id="@+id/profileButton"
@@ -119,7 +174,7 @@
             android:text="Profil"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <Button
             android:id="@+id/settingsButton"
@@ -129,6 +184,6 @@
             android:text="Ustawienia"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

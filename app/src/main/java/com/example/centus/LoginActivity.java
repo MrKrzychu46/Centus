@@ -24,17 +24,17 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        // Inicjalizacja FirebaseAuth
         mAuth = FirebaseAuth.getInstance();
 
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
         Button loginButton = findViewById(R.id.loginButton);
         TextView registerLink = findViewById(R.id.registerLink);
+        TextView forgotPasswordLink = findViewById(R.id.forgotPasswordLink);
 
         loginButton.setOnClickListener(v -> {
             if (!isNetworkAvailable()) {
-                Toast.makeText(LoginActivity.this, "Brak połączenia z Internetem. Nie można się zalogować.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Brak połączenia z Internetem. Nie można się zalogować.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -42,16 +42,20 @@ public class LoginActivity extends AppCompatActivity {
             String password = passwordEditText.getText().toString().trim();
 
             if (email.isEmpty() || password.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Proszę wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Proszę wypełnić wszystkie pola", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             loginUser(email, password);
         });
 
-        // Obsługa kliknięcia linku do rejestracji
         registerLink.setOnClickListener(v -> {
-            Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
+            Intent intent = new Intent(this, RegisterActivity.class);
+            startActivity(intent);
+        });
+
+        forgotPasswordLink.setOnClickListener(v -> {
+            Intent intent = new Intent(this, ResetPasswordActivity.class);
             startActivity(intent);
         });
     }
@@ -61,10 +65,10 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
-                        Toast.makeText(LoginActivity.this, "Logowanie powiodło się", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Logowanie powiodło się", Toast.LENGTH_SHORT).show();
                         updateUI(user);
                     } else {
-                        Toast.makeText(LoginActivity.this, "Logowanie nie powiodło się.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Logowanie nie powiodło się.", Toast.LENGTH_SHORT).show();
                         updateUI(null);
                     }
                 });
@@ -78,7 +82,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private void updateUI(FirebaseUser user) {
         if (user != null) {
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            Intent intent = new Intent(this, MainActivity.class);
             startActivity(intent);
             finish();
         }

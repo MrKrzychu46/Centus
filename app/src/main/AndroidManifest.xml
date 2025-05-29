@@ -23,6 +23,23 @@
             android:name=".AddDebtActivity"
             android:exported="false" />
 
+        <activity android:name=".CreateGroupActivity"
+            android:exported="false" />
+
+        <activity android:name=".AddGroupExpenseActivity"
+            android:exported="false" />
+
+        <activity android:name=".GroupDetailsActivity"
+            android:exported="false" />
+
+        <activity android:name=".ManageGroupMembersActivity"
+            android:exported="false" />
+
+        <activity android:name=".DebtorDetailsActivity"
+            android:exported="false" />
+
+        <activity android:name=".ResetPasswordActivity"
+            android:exported="false" />
 
         <activity
             android:name=".OptionsActivity"

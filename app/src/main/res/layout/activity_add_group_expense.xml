@@ -56,37 +56,54 @@
     <!-- Główna zawartość -->
 
     <LinearLayout
-        android:id="@+id/mainGroupsLayout"
+        android:id="@+id/mainExpenseContent"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
-        app:layout_constraintTop_toBottomOf="@+id/appLogo"
+        app:layout_constraintTop_toBottomOf="@id/appLogo"
         app:layout_constraintBottom_toTopOf="@+id/bottomNav"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/createGroupButton"
+        <TextView
+            android:id="@+id/expenseGroupNameText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="➕ Utwórz nową grupę"
+            android:text="Grupa:"
+            android:textColor="@color/text_light"
+            android:textSize="20dp"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/expenseTitleEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Tytuł wydatku"
+            android:backgroundTint="@color/button_background"
+            android:textColorHint="@color/text_light"
+            android:textColor="@color/text_light"
+            android:inputType="text"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/expenseAmountEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Kwota (zł)"
+            android:inputType="numberDecimal"
+            android:backgroundTint="@color/button_background"
+            android:textColorHint="@color/text_light"
+            android:textColor="@color/text_light"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/saveExpenseButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Zapisz wydatek"
             android:textColor="@color/text_light"
             android:backgroundTint="@color/button_background" />
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-
-            <LinearLayout
-                android:id="@+id/groupsLayout"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="16dp" />
-        </ScrollView>
     </LinearLayout>
 
     <!-- BottomNav -->
@@ -109,7 +126,7 @@
             android:text="Grupy"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <Button
             android:id="@+id/profileButton"
@@ -119,7 +136,7 @@
             android:text="Profil"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <Button
             android:id="@+id/settingsButton"
@@ -129,6 +146,6 @@
             android:text="Ustawienia"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
@@ -6,15 +7,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_dark"
+    android:padding="8dp"
     tools:context=".AddDebtActivity">
 
     <!-- UpperNav -->
+
     <ImageButton
         android:id="@+id/notificationButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginTop="36dp"
-        android:layout_marginEnd="48dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginEnd="24dp"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:contentDescription="@string/notifications_icon"
@@ -26,8 +29,8 @@
 
     <ImageButton
         android:id="@+id/appLogo"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
         android:layout_marginTop="8dp"
         android:background="@android:color/transparent"
         android:clickable="true"
@@ -43,8 +46,8 @@
         android:id="@+id/addingDebtsButton"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:layout_marginTop="36dp"
-        android:layout_marginStart="48dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginStart="24dp"
         android:background="@android:color/transparent"
         android:clickable="true"
         android:contentDescription="@string/addingDebts_icon"
@@ -113,6 +116,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
         android:layout_marginEnd="32dp"
+        android:layout_marginTop="8dp"
         android:backgroundTint="@color/button_background"
         android:hint="Numer telefonu dłużnika"
         android:inputType="phone"
@@ -128,13 +132,15 @@
         android:id="@+id/addDebtButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
+        android:layout_marginTop="24dp"
+        android:layout_marginBottom="16dp"
         android:backgroundTint="@color/button_background"
         android:text="Dodaj dług"
         android:textColor="@color/text_light"
         app:layout_constraintTop_toBottomOf="@id/userPhoneInput"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav" />
 
     <!-- BottomNav -->
 
@@ -143,11 +149,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
+        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:gravity="center"
-        android:layout_marginBottom="0dp">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <Button
             android:id="@+id/groupsButton"
@@ -157,7 +162,7 @@
             android:text="Grupy"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/profileButton"
@@ -167,7 +172,7 @@
             android:text="Profil"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1"/>
+            android:layout_weight="1" />
 
         <Button
             android:id="@+id/settingsButton"
@@ -177,8 +182,7 @@
             android:text="Ustawienia"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1"/>
-
+            android:layout_weight="1" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,12 +1,10 @@
 package com.example.centus;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,13 +13,16 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<AddDebtActivity.Debt> debtList = new ArrayList<>();
     private LinearLayout debtsLayout;
     private TextView totalDebtTextView;
     private View statusIndicator;
@@ -39,6 +40,12 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        listenToDebtChanges();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -48,14 +55,11 @@ public class MainActivity extends AppCompatActivity {
         debtsLayout = findViewById(R.id.debtsLayout);
         totalDebtTextView = findViewById(R.id.totalDebtTextView);
 
-        // Nawigacja
         findViewById(R.id.addingDebtsButton).setOnClickListener(v -> startActivity(new Intent(this, AddDebtActivity.class)));
         findViewById(R.id.notificationButton).setOnClickListener(v -> startActivity(new Intent(this, NotificationActivity.class)));
         findViewById(R.id.profileButton).setOnClickListener(v -> startActivity(new Intent(this, MyProfileActivity.class)));
         findViewById(R.id.groupsButton).setOnClickListener(v -> startActivity(new Intent(this, MyGroupsActivity.class)));
         findViewById(R.id.settingsButton).setOnClickListener(v -> startActivity(new Intent(this, OptionsActivity.class)));
-
-        listenToDebtChanges(); // 🔁 Nasłuchiwanie w czasie rzeczywistym
     }
 
     private void listenToDebtChanges() {
@@ -72,9 +76,13 @@ public class MainActivity extends AppCompatActivity {
 
             if (querySnapshot == null) return;
 
-            ArrayList<AddDebtActivity.Debt> debtsAsCreditor = new ArrayList<>();
-            ArrayList<AddDebtActivity.Debt> debtsAsDebtor = new ArrayList<>();
             debtsLayout.removeAllViews();
+
+            Map<String, List<AddDebtActivity.Debt>> groupedDebts = new HashMap<>();
+            List<AddDebtActivity.Debt> debtsAsDebtor = new ArrayList<>();
+
+            double totalCredit = 0;
+            double totalDebt = 0;
 
             for (QueryDocumentSnapshot doc : querySnapshot) {
                 String id = doc.getId();
@@ -89,9 +97,12 @@ public class MainActivity extends AppCompatActivity {
                 debt.setId(id);
 
                 if (creditorId != null && creditorId.equals(currentUid)) {
-                    debtsAsCreditor.add(debt);
+                    groupedDebts.putIfAbsent(debtorId, new ArrayList<>());
+                    groupedDebts.get(debtorId).add(debt);
+                    totalCredit += amount;
                 } else if (debtorId != null && debtorId.equals(currentUid)) {
                     debtsAsDebtor.add(debt);
+                    totalDebt += amount;
                 }
             }
 
@@ -102,20 +113,50 @@ public class MainActivity extends AppCompatActivity {
                 for (AddDebtActivity.Debt debt : debtsAsDebtor) addDebtButtonToLayout(debt);
             }
 
-            if (!debtsAsCreditor.isEmpty()) {
+            if (!groupedDebts.isEmpty()) {
                 TextView label = new TextView(this);
                 label.setText("🟩 Twoi dłużnicy (Ty pożyczyłeś):");
                 debtsLayout.addView(label);
-                for (AddDebtActivity.Debt debt : debtsAsCreditor) addDebtButtonToLayout(debt);
+
+                for (String debtorId : groupedDebts.keySet()) {
+                    List<AddDebtActivity.Debt> debts = groupedDebts.get(debtorId);
+                    double total = 0.0;
+                    for (AddDebtActivity.Debt d : debts) total += d.amount;
+
+                    double finalTotal = total;
+                    firebaseHelper.fetchUserById(debtorId, new FirebaseHelper.OnUserFetchListener() {
+                        @Override
+                        public void onSuccess(Map<String, Object> userData) {
+                            String name = (String) userData.get("name");
+                            String surname = (String) userData.get("surname");
+                            String fullName = (name != null ? name : "") + " " + (surname != null ? surname : "");
+
+                            Button debtorButton = new Button(MainActivity.this);
+                            debtorButton.setText(fullName + " – " + debts.size() + " dług(i) – razem: " + String.format("%.2f", finalTotal) + " zł");
+                            debtorButton.setOnClickListener(v -> {
+                                Intent intent = new Intent(MainActivity.this, DebtorDetailsActivity.class);
+                                intent.putExtra("debtorId", debtorId);
+                                intent.putExtra("debtorName", fullName);
+                                startActivity(intent);
+                            });
+                            debtsLayout.addView(debtorButton);
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            Log.e("MainActivity", "Błąd przy pobieraniu użytkownika", e);
+                        }
+                    });
+                }
             }
 
-            updateTotalDebt(debtsAsDebtor, debtsAsCreditor);
+            updateTotalDebt(totalDebt, totalCredit);
         });
     }
 
     private void addDebtButtonToLayout(AddDebtActivity.Debt debt) {
         Button button = new Button(this);
-        button.setText("Dług: " + debt.name + " - " + debt.amount + " zł");
+        button.setText("Dług: " + debt.name + " - " + String.format("%.2f", debt.amount) + " zł");
         button.setOnClickListener(v -> {
             Intent intent = new Intent(this, DebtDetailActivity.class);
             intent.putExtra("debtId", debt.getId());
@@ -124,12 +165,9 @@ public class MainActivity extends AppCompatActivity {
         debtsLayout.addView(button);
     }
 
-    private void updateTotalDebt(ArrayList<AddDebtActivity.Debt> debtorList, ArrayList<AddDebtActivity.Debt> creditorList) {
-        double total = 0.0;
-        for (AddDebtActivity.Debt d : creditorList) total += d.amount;
-        for (AddDebtActivity.Debt d : debtorList) total -= d.amount;
-
-        totalDebtTextView.setText("Bilans: " + total + " zł");
+    private void updateTotalDebt(double totalDebt, double totalCredit) {
+        double total = totalCredit - totalDebt;
+        totalDebtTextView.setText("Bilans: " + String.format("%.2f", total) + " zł");
         if (total > 0) {
             statusIndicator.setBackgroundColor(getResources().getColor(android.R.color.holo_green_light));
             statusIndicator.setVisibility(View.VISIBLE);

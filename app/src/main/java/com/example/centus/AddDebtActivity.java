@@ -37,9 +37,13 @@ public class AddDebtActivity extends Activity {
         firebaseHelper = new FirebaseHelper();
 
         userPhoneInput = findViewById(R.id.userPhoneInput);
+
+        // Wyłącz autouzupełnianie i sugestie
+        userPhoneInput.setInputType(android.text.InputType.TYPE_CLASS_PHONE);
+        userPhoneInput.setThreshold(Integer.MAX_VALUE); // brak sugestii
+
         loadUsersFromFirestore();
 
-        // Nawigacja
         findViewById(R.id.notificationButton).setOnClickListener(v -> startActivity(new Intent(this, NotificationActivity.class)));
         findViewById(R.id.appLogo).setOnClickListener(v -> startActivity(new Intent(this, MainActivity.class)));
         findViewById(R.id.profileButton).setOnClickListener(v -> startActivity(new Intent(this, MyProfileActivity.class)));
@@ -129,7 +133,6 @@ public class AddDebtActivity extends Activity {
         FirebaseFirestore.getInstance().collection("users")
                 .get()
                 .addOnSuccessListener(query -> {
-                    ArrayList<String> phoneList = new ArrayList<>();
                     for (QueryDocumentSnapshot doc : query) {
                         String uid = doc.getId();
                         String phone = doc.getString("phone");
@@ -140,11 +143,7 @@ public class AddDebtActivity extends Activity {
 
                         phoneToUidMap.put(phone, uid);
                         phoneToEmailMap.put(phone, email);
-                        phoneList.add(phone);
                     }
-
-                    ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, phoneList);
-                    userPhoneInput.setAdapter(adapter);
                 });
     }
 

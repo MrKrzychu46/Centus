@@ -3,8 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="8dp"
-    android:background="@color/background_dark">
+    android:background="@color/background_dark"
+    android:padding="8dp">
 
     <!-- UpperNav -->
 
@@ -56,7 +56,7 @@
     <!-- Główna zawartość -->
 
     <LinearLayout
-        android:id="@+id/mainGroupsLayout"
+        android:id="@+id/debtorContentLayout"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
@@ -65,15 +65,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <Button
-            android:id="@+id/createGroupButton"
+        <TextView
+            android:id="@+id/debtorTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="➕ Utwórz nową grupę"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
+            android:text="Długi użytkownika"
+            android:textSize="20sp"
             android:textColor="@color/text_light"
-            android:backgroundTint="@color/button_background" />
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/balanceText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bilans: --"
+            android:textSize="16sp"
+            android:textColor="@color/text_light"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp" />
 
         <ScrollView
             android:layout_width="match_parent"
@@ -81,11 +91,10 @@
             android:layout_weight="1">
 
             <LinearLayout
-                android:id="@+id/groupsLayout"
+                android:id="@+id/debtorDebtsLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingBottom="16dp" />
+                android:orientation="vertical" />
         </ScrollView>
     </LinearLayout>
 
@@ -109,7 +118,7 @@
             android:text="Grupy"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <Button
             android:id="@+id/profileButton"
@@ -119,7 +128,7 @@
             android:text="Profil"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
 
         <Button
             android:id="@+id/settingsButton"
@@ -129,6 +138,6 @@
             android:text="Ustawienia"
             android:backgroundTint="@color/button_background"
             android:textColor="@color/text_light"
-            android:layout_weight="1" />
+            android:layout_weight="1"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
